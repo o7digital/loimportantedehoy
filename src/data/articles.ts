@@ -1,26 +1,24 @@
 export type Article = {
   slug: string; number: number; title: string; seoTitle: string; description: string;
   category: string; categorySlug: string; published: string; updated: string; readTime: number;
-  author: string; featured?: boolean; image?: string; excerpt: string; intro: string[];
+  author: string; featured?: boolean; image?: string; historicalDate?: string; excerpt: string; intro: string[];
   premium: { heading: string; paragraphs: string[] }[];
 };
 
 export const articles: Article[] = [
   {
-    slug: "the-doors-el-dia-en-que-se-cerro-una-era", number: 218, featured: true,
+    slug: "the-doors-disolucion-1973", number: 218, featured: true,
     title: "The Doors: el día en que se cerró una era",
     seoTitle: "The Doors y el final de una era | Lo importante de hoy",
-    description: "Una mirada editorial al legado de The Doors y al momento en que su historia cambió para siempre.",
-    category: "Música", categorySlug: "musica", published: "2026-08-30", updated: "2026-08-30", readTime: 7,
-    author: "Redacción Lo importante de hoy", image: "/the-doors-edicion.webp",
+    description: "La historia de la disolución de The Doors, anunciada el 30 de agosto de 1973, y el legado de la banda tras la muerte de Jim Morrison.",
+    category: "Música e Historia", categorySlug: "musica", historicalDate: "1973-08-30", published: "2026-08-30", updated: "2026-08-30", readTime: 8,
+    author: "Redacción Lo importante de hoy",
     excerpt: "Algunas bandas terminan. Otras permanecen como una puerta abierta hacia el tiempo que las hizo posibles.",
     intro: [
-      "The Doors ocupan un lugar extraño y persistente en la memoria del rock: fueron una banda de su tiempo y, al mismo tiempo, una pregunta que ese tiempo dejó sin responder.",
-      "Esta edición recorre su huella cultural sin convertirla en una lista de fechas. Nos interesa la tensión entre la música, la imagen pública y el modo en que una obra sigue cambiando cuando quienes la crearon ya no pueden explicarla.",
+      "El 30 de agosto de 1973 se anunció oficialmente la disolución de The Doors. La banda que había transformado el rock con su mezcla de poesía, psicodelia y provocación llegaba a su final dos años después de la muerte de Jim Morrison.",
     ],
     premium: [
-      { heading: "Una música que abría habitaciones", paragraphs: ["El órgano, la guitarra contenida y una voz que parecía hablar desde un escenario interior construyeron un lenguaje reconocible desde los primeros compases.", "Más que reconstruir una cronología exhaustiva, esta lectura propone escuchar cómo una generación proyectó sus deseos y contradicciones en cuatro músicos."] },
-      { heading: "Después del último acorde", paragraphs: ["Cuando una historia cultural se cierra, comienza otra: la de sus reediciones, sus nuevas audiencias y las preguntas que cada época vuelve a hacerle."] },
+      { heading: "El legado de The Doors", paragraphs: ["The Doors unió poesía, rock y rebeldía como pocas bandas de su época. Décadas después de su separación, su música continúa formando parte de la cultura popular y sigue inspirando a nuevas generaciones de artistas y oyentes."] },
     ],
   },
   {

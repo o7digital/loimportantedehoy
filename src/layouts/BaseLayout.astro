@@ -2,10 +2,10 @@
 import "../styles/global.css";
 import { site } from "../config/site";
 interface Props { title?: string; description?: string; image?: string; canonical?: string; type?: "website" | "article"; jsonLd?: Record<string, unknown> | Record<string, unknown>[]; }
-const { title = `${site.name} | Revista de cultura, historia y música`, description = site.description, image = "/the-doors-edicion.webp", canonical = Astro.url.pathname, type = "website", jsonLd } = Astro.props;
+const { title = `${site.name} | Revista de cultura, historia y música`, description = site.description, image, canonical = Astro.url.pathname, type = "website", jsonLd } = Astro.props;
 const canonicalUrl = new URL(canonical, site.url).toString();
-const imageUrl = new URL(image, site.url).toString();
-const organization = { "@context": "https://schema.org", "@type": "Organization", name: site.name, url: site.url, logo: new URL("/the-doors-edicion.webp", site.url).toString(), sameAs: [site.instagram] };
+const imageUrl = image ? new URL(image, site.url).toString() : undefined;
+const organization = { "@context": "https://schema.org", "@type": "Organization", name: site.name, url: site.url, sameAs: [site.instagram] };
 ---
 <!doctype html>
 <html lang="es">
@@ -17,9 +17,9 @@ const organization = { "@context": "https://schema.org", "@type": "Organization"
     <link rel="canonical" href={canonicalUrl} />
     <meta property="og:type" content={type} /><meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} /><meta property="og:description" content={description} />
-    <meta property="og:url" content={canonicalUrl} /><meta property="og:image" content={imageUrl} />
+    <meta property="og:url" content={canonicalUrl} />{imageUrl && <meta property="og:image" content={imageUrl} />}
     <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} /><meta name="twitter:image" content={imageUrl} />
+    <meta name="twitter:description" content={description} />{imageUrl && <meta name="twitter:image" content={imageUrl} />}
     <script type="application/ld+json" set:html={JSON.stringify(organization)} />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <title>{title}</title>

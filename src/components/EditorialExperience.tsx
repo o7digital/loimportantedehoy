@@ -4,7 +4,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { site } from "../config/site";
 
 const editions = [
-  { number: "Nº 218", date: "30 AGO 2026", title: "The Doors: el día en que se cerró una era", category: "Música & memoria", featured: true },
+  { number: "Nº 218", date: "30 AGO 1973", title: "El día en que The Doors anunció su disolución", category: "Música e Historia", featured: true },
   { number: "Nº 217", date: "29 AGO 2026", title: "Ingrid Bergman: una vida fuera del guion", category: "Personajes" },
   { number: "Nº 216", date: "28 AGO 2026", title: "La ciudad que aprendió a mirar hacia arriba", category: "Historia" },
   { number: "Nº 215", date: "27 AGO 2026", title: "Las canciones que cambiaron una generación", category: "Cultura sonora" },
@@ -37,8 +37,8 @@ export default function Home() {
 
       <section className="hero">
         <div className="hero-noise" />
-        <div className="hero-copy"><div className="edition-label"><span>EDICIÓN Nº 218</span><i />30 DE AGOSTO, 2026</div><h1>La historia<br />no es pasado.<br /><em>Es perspectiva.</em></h1><p className="hero-intro">Una revista digital para quienes todavía sienten curiosidad. Hechos, personajes y música que merecen algo más que un scroll.</p><div className="hero-actions-row"><a className="button button-red" href="/ediciones/the-doors-el-dia-en-que-se-cerro-una-era">Leer la edición <Arrow /></a><a className="discover-link" href="#ediciones">Descubrir la revista <Arrow down /></a></div><div className="hero-meta"><span><b>7 min</b> lectura principal</span><span><b>4</b> historias nuevas</span><span><b>1</b> edición para guardar</span></div></div>
-        <div className="cover-stage"><div className="cover-shadow" /><article className="magazine-cover"><img src="/the-doors-edicion.webp" alt="Edición de Lo importante de hoy dedicada a The Doors" /><div className="cover-gloss" /></article><div className="cover-note"><span>EN PORTADA</span><strong>The Doors</strong><small>El final de una banda que cambió el rostro del rock.</small></div></div>
+        <div className="hero-copy"><div className="edition-label"><span>30 DE AGOSTO DE 1973</span></div><h1>El día en que<br />The Doors anunció<br /><em>su disolución.</em></h1><p className="hero-intro">Tras la muerte de Jim Morrison, los miembros sobrevivientes de The Doors intentaron continuar como trío y publicaron dos nuevos álbumes. Sin embargo, la esencia del grupo ya no era la misma. El 30 de agosto de 1973 se anunció oficialmente su disolución.</p><div className="hero-actions-row"><a className="button button-red" href="/ediciones/the-doors-disolucion-1973">Leer el artículo completo <Arrow /></a><a className="discover-link" href="#ediciones">Descubrir la revista <Arrow down /></a></div><div className="hero-meta"><span><b>8 min</b> lectura principal</span><span><b>4</b> historias nuevas</span><span><b>1</b> edición para guardar</span></div></div>
+        <div className="cover-stage"><div className="cover-shadow" /><article className="typographic-cover" aria-label="Composición editorial The Doors — 1973"><small>HISTORIA DE LA MÚSICA</small><span>THE</span><strong>DOORS</strong><i></i><b>1973</b><p>EL DÍA EN QUE<br />SE CERRÓ UNA ERA</p></article><div className="cover-note"><span>ARTÍCULO PRINCIPAL</span><strong>The Doors</strong><small>El final de una banda que cambió el rostro del rock.</small></div></div>
         <div className="hero-rail"><span>HECHOS</span><i /><span>PERSONAJES</span><i /><span>MÚSICA</span><i /><span>IDEAS</span></div>
       </section>
 
@@ -50,7 +50,7 @@ export default function Home() {
 
       <section className="editions" id="ediciones">
         <div className="editions-head"><div><div className="section-index light">02 <span /> EL ARCHIVO</div><h2>Ediciones para<br /><em>volver a ellas.</em></h2></div><p>Nuevas historias, todos los días.<br />Una colección que crece contigo.</p></div>
-        <div className="edition-grid">{editions.map((edition, index) => { const slugs = ["the-doors-el-dia-en-que-se-cerro-una-era", "ingrid-bergman-una-vida-fuera-del-guion", "la-ciudad-que-aprendio-a-mirar-hacia-arriba", "las-canciones-que-cambiaron-una-generacion"]; return <article className={`edition-card ${edition.featured ? "featured" : ""}`} key={edition.number}>{edition.featured ? <img src="/the-doors-edicion.webp" alt="Portada de la edición sobre The Doors" /> : <div className={`edition-art art-${index}`} aria-hidden="true"><span>{edition.category.split(" ")[0]}</span><i /></div>}<div className="edition-info"><div><span>{edition.number}</span><span>{edition.date}</span></div><small>{edition.category}</small><h3>{edition.title}</h3><a href={`/ediciones/${slugs[index]}`}>Abrir edición <Arrow /></a></div></article>; })}</div>
+        <div className="edition-grid">{editions.map((edition, index) => { const slugs = ["the-doors-disolucion-1973", "ingrid-bergman-una-vida-fuera-del-guion", "la-ciudad-que-aprendio-a-mirar-hacia-arriba", "las-canciones-que-cambiaron-una-generacion"]; return <article className={`edition-card ${edition.featured ? "featured" : ""}`} key={edition.number}><div className={`edition-art art-${index}`} aria-hidden="true"><span>{index === 0 ? "The Doors — 1973" : edition.category.split(" ")[0]}</span><i /></div><div className="edition-info"><div><span>{edition.number}</span><span>{edition.date}</span></div><small>{edition.category}</small><h3>{edition.title}</h3><a href={`/ediciones/${slugs[index]}`}>Abrir edición <Arrow /></a></div></article>; })}</div>
       </section>
 
       <section className="membership" id="membresia">
