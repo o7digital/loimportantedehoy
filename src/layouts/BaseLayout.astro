@@ -1,0 +1,28 @@
+---
+import "../styles/global.css";
+import { site } from "../config/site";
+interface Props { title?: string; description?: string; image?: string; canonical?: string; type?: "website" | "article"; jsonLd?: Record<string, unknown> | Record<string, unknown>[]; }
+const { title = `${site.name} | Revista de cultura, historia y música`, description = site.description, image = "/the-doors-edicion.webp", canonical = Astro.url.pathname, type = "website", jsonLd } = Astro.props;
+const canonicalUrl = new URL(canonical, site.url).toString();
+const imageUrl = new URL(image, site.url).toString();
+const organization = { "@context": "https://schema.org", "@type": "Organization", name: site.name, url: site.url, logo: new URL("/the-doors-edicion.webp", site.url).toString(), sameAs: [site.instagram] };
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0a0a09" />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content={type} /><meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} /><meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} /><meta property="og:image" content={imageUrl} />
+    <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} /><meta name="twitter:image" content={imageUrl} />
+    <script type="application/ld+json" set:html={JSON.stringify(organization)} />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <title>{title}</title>
+  </head>
+  <body><slot /></body>
+</html>

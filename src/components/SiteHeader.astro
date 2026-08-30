@@ -1,0 +1,14 @@
+---
+import { site } from "../config/site";
+---
+<header class="site-header inner-header">
+  <a class="brand" href="/" aria-label={`${site.name} — inicio`}><span class="prism" aria-hidden="true"><span class="prism-beam"></span></span><span class="brand-copy">Lo <b>importante</b><br />de hoy</span></a>
+  <nav class="nav" id="site-nav" aria-label="Navegación principal"><a href="/ediciones">Ediciones</a><a href="/#manifiesto">Manifiesto</a><a href="/membresia">Membresía</a></nav>
+  <div class="header-actions"><a class="login-link" href="/acceder">Acceder</a><a class="header-cta" href="/membresia">Hazte miembro <span aria-hidden="true">↗</span></a></div>
+  <button class="menu-button" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="site-nav"><span></span><span></span></button>
+</header>
+<script>
+  const button = document.querySelector<HTMLButtonElement>(".menu-button");
+  const nav = document.querySelector<HTMLElement>("#site-nav");
+  button?.addEventListener("click", () => { const open = button.getAttribute("aria-expanded") !== "true"; button.setAttribute("aria-expanded", String(open)); nav?.classList.toggle("open", open); });
+</script>

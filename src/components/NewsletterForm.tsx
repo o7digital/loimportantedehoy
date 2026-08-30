@@ -1,0 +1,5 @@
+import { type FormEvent, useState } from "react";
+export default function NewsletterForm() { const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle"); async function submit(e: FormEvent<HTMLFormElement>) { e.preventDefault(); const form = e.currentTarget; if (!form.checkValidity()) { setState("error"); return; } setState("loading"); await new Promise((resolve) => setTimeout(resolve, 600)); setState("success"); }
+  if (state === "success") return <div className="success-message" role="status">Gracias. Tu registro de demostración quedó confirmado.</div>;
+  return <form onSubmit={submit} noValidate><label className="sr-only" htmlFor="newsletter-page-email">Tu correo electrónico</label><input id="newsletter-page-email" name="email" type="email" required placeholder="tu@email.com" aria-invalid={state === "error"} /><button type="submit" disabled={state === "loading"}>{state === "loading" ? "Enviando…" : "Quiero recibirla ↗"}</button>{state === "error" && <span className="form-error" role="alert">Escribe una dirección de correo válida.</span>}</form>;
+}
