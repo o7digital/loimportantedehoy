@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import MagazineReader from "../../components/MagazineReader";
+import { magazines, type Magazine } from "../../data/magazines";
+
+export function getStaticPaths() {
+  return magazines.map((edition) => ({ params: { slug: edition.slug }, props: { edition } }));
+}
+const { edition } = Astro.props as { edition: Magazine };
+---
+<BaseLayout title={`${edition.title} · La revista | Lo importante de hoy`} description={edition.subtitle} image={edition.image}>
+  <MagazineReader edition={edition} editions={magazines} client:load />
+</BaseLayout>

@@ -1,0 +1,8 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import MagazineReader from "../../components/MagazineReader";
+import { latestMagazine, magazines } from "../../data/magazines";
+---
+<BaseLayout title={`${latestMagazine.title} · La revista | Lo importante de hoy`} description="La edición de hoy, página a página. Desliza para descubrir historias, palabras que inspiran y música que conecta." canonical={`/revista/${latestMagazine.slug}`} image={latestMagazine.image}>
+  <MagazineReader edition={latestMagazine} editions={magazines} client:load />
+</BaseLayout>

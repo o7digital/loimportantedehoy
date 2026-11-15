@@ -1,0 +1,178 @@
+.magazine-reader {
+  --reader-gold: #c9ac72;
+  --reader-line: rgba(240, 235, 223, .14);
+  min-height: 100svh;
+  font-family: Arial, sans-serif;
+  color: var(--paper);
+  background: radial-gradient(ellipse at 60% 40%, #25241f, #101110 65%);
+}
+.magazine-reader a:focus-visible, .magazine-reader button:focus-visible, .reader-track:focus-visible { outline: 2px solid var(--reader-gold); outline-offset: -3px; }
+.reader-header { height: 90px; padding: 0 4.5vw; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--reader-line); }
+.reader-header-label, .reader-back { font-size: 9px; letter-spacing: 1.7px; text-transform: uppercase; color: #b8b3a8; }
+.reader-back span { margin-left: 20px; color: var(--reader-gold); }
+.reader-layout { position: relative; width: min(1070px, 92vw); margin: 40px auto 0; display: grid; grid-template-columns: 290px minmax(0, 1fr); column-gap: 75px; padding-bottom: 32px; }
+.reader-sidebar { padding-top: 26px; }
+.reader-kicker { font: 10px/1.5 Arial, sans-serif; text-transform: uppercase; letter-spacing: 1.8px; color: var(--reader-gold); }
+.reader-sidebar h2 { font: 400 42px/1.1 Georgia, serif; letter-spacing: -1.7px; margin: 27px 0 22px; }
+.reader-sidebar h2 em { color: var(--reader-gold); }
+.reader-sidebar-intro { max-width: 260px; font: 15px/1.8 Georgia, serif; color: #aaa69b; }
+.reader-sidebar-label { display: flex; justify-content: space-between; margin-top: 50px; padding-bottom: 17px; border-bottom: 1px solid var(--reader-line); font-size: 9px; letter-spacing: 1.4px; color: #bfb8a9; }
+.reader-sidebar-label > span { color: #8c887f; font-size: 8px; }
+.reader-contents { display: grid; }
+.reader-contents a { display: flex; align-items: center; gap: 19px; min-height: 49px; padding: 10px 0; border-bottom: 1px solid var(--reader-line); font: 17px Georgia, serif; color: #a6a296; }
+.reader-contents a > span:first-child { font: 9px Arial, sans-serif; color: #8c887f; }
+.reader-contents a > span:last-child { margin-left: auto; font: 15px Arial, sans-serif; opacity: 0; }
+.reader-contents a[aria-current], .reader-contents a:hover { color: var(--paper); }
+.reader-contents a[aria-current] > span { color: var(--reader-gold); opacity: 1; }
+.reader-archive-button { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: space-between; border: 0; background: none; color: var(--reader-gold); padding: 0; margin-top: 22px; font-size: 10px; }
+.reader-archive-button svg { width: 22px; }
+.reader-sidebar-foot { display: grid; gap: 9px; margin-top: 32px; }
+.reader-sidebar-foot > span { font-size: 9px; color: #999487; }
+.reader-sidebar-foot strong { font: italic 29px Georgia, serif; color: var(--reader-gold); }
+.reader-sidebar-foot a { font-size: 9px; color: #aaa497; margin-top: 6px; }
+.reader-book { min-width: 0; display: flex; flex-direction: column; height: min(840px, calc(100dvh - 170px)); min-height: 580px; border: 1px solid var(--reader-line); box-shadow: 0 24px 90px #0006; background: #141614; }
+.reader-toolbar { min-height: 51px; padding: 0 23px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--reader-line); }
+.reader-toolbar button { min-height: 44px; border: 0; padding: 0; display: flex; align-items: center; background: none; color: #d9d3c6; font-size: 10px; }
+.reader-edition-button { gap: 9px; }
+.reader-edition-button > span:last-child { margin-left: 7px; font-size: 15px; color: #c1b99f; }
+.reader-live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--reader-gold); box-shadow: 0 0 0 3px #c9ac7215; }
+.reader-index-button { gap: 8px; }
+.reader-index-button svg { width: 17px; height: 17px; }
+.reader-tabs { position: relative; display: flex; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--reader-line); flex-shrink: 0; }
+.reader-tabs::-webkit-scrollbar, .reader-track::-webkit-scrollbar { display: none; }
+.reader-tabs a { min-height: 44px; flex: 1 0 auto; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; font-size: 9px; color: #aaa69b; border-bottom: 2px solid transparent; }
+.reader-tabs a > span { font-size: 8px; color: #858276; }
+.reader-tabs a[aria-current] { color: var(--reader-gold); border-color: var(--reader-gold); }
+.reader-tabs a[aria-current] > span { color: var(--reader-gold); }
+.reader-track { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.reader-page { width: 100%; flex: 0 0 100%; min-width: 0; height: 100%; overflow-y: auto; overscroll-behavior-y: contain; scroll-snap-align: start; scroll-snap-stop: always; background: var(--paper); color: var(--ink); scrollbar-width: thin; scrollbar-color: #b5aa94 transparent; }
+.reader-cover { color: var(--paper); background: radial-gradient(ellipse at 50% 30%, #14233a, #0c1422 65%); }
+.reader-cover-content { min-height: 100%; padding: 24px 40px 20px; display: flex; align-items: center; flex-direction: column; justify-content: center; text-align: center; }
+.reader-cover-topline { width: 100%; display: flex; justify-content: space-between; margin-bottom: 22px; font-size: 8px; letter-spacing: 1.6px; color: #a99f88; }
+.reader-poster { position: relative; display: block; width: min(100%, 245px); flex-shrink: 0; transform: rotate(-2deg); border: 1px solid #b99a613d; box-shadow: 7px 12px 0 #0003, 0 15px 40px #0008; transition: transform .25s ease; }
+.reader-poster:hover { transform: rotate(0); }
+.reader-poster img { width: 100%; height: auto; display: block; }
+.reader-poster > span { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #0a101c; color: #dfc68e; font-size: 9px; }
+.reader-cover-heading { width: 100%; margin-top: 24px; }
+.reader-cover-heading .reader-kicker { font-size: 8px; letter-spacing: 2px; margin: 0 0 10px; }
+.reader-cover h1 { margin: 0; font: 400 clamp(40px, 4.5vw, 62px)/.97 Georgia, serif; letter-spacing: -2px; color: #e4c98a; }
+.reader-cover-heading > p:not(.reader-kicker) { max-width: 390px; margin: 12px auto 16px; font: italic 18px/1.35 Georgia, serif; color: #e2ddcf; }
+.reader-anniversary { font-size: 9px; line-height: 1.6; letter-spacing: .6px; color: #ada691; }
+.reader-swipe-hint { margin: 24px 0 0; display: flex; align-items: center; gap: 12px; color: #a9a89e; font-size: 9px; }
+.reader-swipe-hint > span { font-size: 23px; color: var(--reader-gold); }
+.reader-chapter-content { min-height: 100%; padding: 25px 40px; display: flex; flex-direction: column; }
+.reader-page-topline { display: flex; align-items: start; justify-content: space-between; gap: 12px; padding-bottom: 19px; margin-bottom: 33px; border-bottom: 1px solid var(--line); font-size: 8px; line-height: 1.5; letter-spacing: 1.3px; text-transform: uppercase; color: #7a7264; }
+.reader-page-topline > span:last-child { text-align: right; }
+.reader-chapter-content > .reader-kicker { color: #976923; font-size: 9px; margin: 0 0 15px; }
+.reader-chapter-content h2 { margin: 0 0 23px; font: 400 clamp(32px, 3.1vw, 44px)/1.08 Georgia, serif; letter-spacing: -1.5px; text-wrap: pretty; }
+.reader-lead { margin: 0 0 22px; font: 19px/1.6 Georgia, serif; color: #4d4539; }
+.reader-paragraph { font: 16px/1.8 Georgia, serif; color: #5a5245; margin: 0 0 20px; }
+.reader-stats { display: grid; grid-template-columns: 1fr 1fr; margin: 0 0 24px; border-top: 1px solid #bcae91; border-bottom: 1px solid #bcae91; }
+.reader-stats > div { display: flex; flex-direction: column; padding: 17px 0; }
+.reader-stats > div + div { padding-left: 22px; border-left: 1px solid #bcae91; }
+.reader-stats strong { font: 400 76px/.95 Georgia, serif; letter-spacing: -4px; color: #a27629; }
+.reader-stats span { font: 14px/1.35 Georgia, serif; max-width: 130px; margin-top: 10px; }
+.reader-entries { margin: 0 0 25px; }
+.reader-entries > div { display: flex; gap: 17px; padding: 17px 0; border-bottom: 1px solid var(--line); }
+.reader-entries > div:first-child { border-top: 1px solid var(--line); }
+.reader-entries > div > span { font-size: 9px; line-height: 24px; color: #98752e; }
+.reader-entries dt { font: 19px/1.3 Georgia, serif; }
+.reader-entries dd { font: 15px/1.6 Georgia, serif; color: #655c4e; margin: 6px 0 0; }
+.reader-quote { position: relative; padding: 30px 0 28px; margin: 0 0 25px; border-top: 1px solid #b6a582; border-bottom: 1px solid #b6a582; }
+.reader-quote > span { display: block; font: 90px/.6 Georgia, serif; color: #a27629; }
+.reader-quote p { margin: 10px 0 21px; font: italic 32px/1.25 Georgia, serif; letter-spacing: -.6px; }
+.reader-quote cite { display: block; font: 9px/1.7 Arial, sans-serif; text-transform: uppercase; letter-spacing: 1px; color: #756a56; }
+.reader-page-signature { margin-top: auto; padding-top: 28px; display: flex; justify-content: space-between; gap: 10px; color: #8d8270; font: italic 11px Georgia, serif; }
+.reader-page-signature > span:last-child { font-size: 18px; color: #94702c; }
+.reader-song { padding: 27px 22px 0; margin: 0 0 22px; color: #e8e1d2; background: #171b1a; text-align: center; }
+.reader-record { width: 133px; height: 133px; margin: 0 auto 22px; display: grid; place-items: center; border-radius: 50%; border: 1px solid #4b4940; background: repeating-radial-gradient(circle, #30332e 0 1px, #131513 2px 4px); box-shadow: 0 8px 18px #0005; }
+.reader-record > span { width: 45px; height: 45px; display: grid; align-content: center; border-radius: 50%; background: #a24a2d; border: 4px solid #b66239; font: 8px/1.2 Georgia, serif; letter-spacing: 2px; }
+.reader-song-info > span { font-size: 7px; letter-spacing: 1.6px; color: #bca475; }
+.reader-song-info h3 { font: 400 32px/1.1 Georgia, serif; margin: 14px 0 9px; letter-spacing: -1px; }
+.reader-song-info p { font: 16px Georgia, serif; margin: 0 0 8px; }
+.reader-song-info small { display: block; font-size: 9px; line-height: 1.6; color: #b4ac9d; }
+.reader-song > a { display: flex; justify-content: space-between; align-items: center; min-height: 49px; border-top: 1px solid #49473d; margin-top: 25px; font-size: 10px; color: #dbc38d; }
+.reader-song-note { font-style: italic; }
+.reader-colophon { padding-top: 20px; border-top: 1px solid var(--line); color: #736957; font: 10px/1.7 Arial, sans-serif; }
+.reader-colophon p:first-child { font-size: 8px; letter-spacing: 1.2px; margin: 0 0 7px; }
+.reader-colophon a { display: inline-block; padding: 8px 0; color: #75521e; text-decoration: underline; }
+.reader-next-edition { display: flex; align-items: center; justify-content: space-between; padding: 19px 0; margin-top: 19px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.reader-next-edition > span { font-size: 8px; letter-spacing: 1.3px; color: #83735a; }
+.reader-next-edition strong { display: block; font: 24px Georgia, serif; letter-spacing: -.7px; margin-top: 8px; color: var(--ink); }
+.reader-next-edition svg { width: 25px; color: #967337; }
+.reader-progress { flex-shrink: 0; height: 2px; background: #39392f; }
+.reader-progress span { display: block; height: 100%; background: var(--reader-gold); transition: width .25s ease; }
+.reader-controls { display: flex; align-items: center; justify-content: space-between; min-height: 62px; padding: 0 20px; }
+.reader-controls button { display: flex; align-items: center; gap: 9px; min-height: 44px; background: none; border: 0; color: #d9d3c5; font-size: 10px; padding: 0 6px; }
+.reader-controls button svg { width: 21px; height: 21px; color: var(--reader-gold); }
+.reader-controls button:disabled { opacity: .27; cursor: default; }
+.reader-page-count { display: flex; align-items: center; gap: 12px; font-size: 10px; letter-spacing: 1.5px; color: #979183; }
+.reader-page-count strong { font-weight: 400; color: #e2d4b6; }
+.reader-page-count > span { color: #676355; }
+.reader-desktop-hint { grid-column: 2; display: flex; justify-content: center; align-items: center; gap: 15px; margin: 19px 0 0; color: #9a9485; font-size: 8px; letter-spacing: 1.3px; }
+.reader-desktop-hint > span { font-size: 14px; color: var(--reader-gold); }
+.reader-dialog { position: fixed; inset: 0; padding: 0; width: min(510px, calc(100% - 32px)); max-height: 85dvh; border: 1px solid #b99a615c; color: var(--paper); background: #191c1a; box-shadow: 0 25px 100px #0008; }
+.reader-dialog::backdrop { background: #000b; backdrop-filter: blur(7px); }
+.reader-dialog-inner { padding: 35px 30px; }
+.reader-dialog h2 { margin: 15px 0 27px; font: 400 35px Georgia, serif; letter-spacing: -1px; }
+.reader-dialog-close { position: absolute; right: 17px; top: 12px; width: 44px; height: 44px; border: 0; background: none; color: #c7bea9; font: 30px Georgia, serif; }
+.reader-edition-list { display: grid; }
+.reader-edition-list > a { display: flex; align-items: center; gap: 17px; border-top: 1px solid var(--reader-line); padding: 19px 0; }
+.reader-edition-list > a[aria-current] { border-top-color: var(--reader-gold); }
+.reader-edition-list img { width: 68px; height: 85px; object-fit: cover; flex-shrink: 0; }
+.reader-edition-list time { font-size: 9px; color: var(--reader-gold); }
+.reader-edition-list h3 { font: 400 24px/1.1 Georgia, serif; margin: 7px 0; letter-spacing: -.6px; }
+.reader-edition-list p { margin: 0; font: 12px/1.5 Georgia, serif; color: #afa99a; }
+.reader-edition-list > a > span { margin-left: auto; color: var(--reader-gold); }
+@media (min-width: 821px) and (max-height: 900px) {
+  .reader-cover-content { padding: 20px 32px; }
+  .reader-poster { width: 178px; }
+  .reader-cover-topline { margin-bottom: 17px; }
+  .reader-cover-heading { margin-top: 21px; }
+  .reader-cover h1 { font-size: 43px; }
+  .reader-cover-heading > p:not(.reader-kicker) { font-size: 16px; margin: 9px auto 12px; }
+  .reader-swipe-hint { margin-top: 17px; }
+}
+@media (max-width: 1050px) { .reader-layout { column-gap: 35px; grid-template-columns: 255px minmax(0, 1fr); } .reader-sidebar h2 { font-size: 37px; } .reader-chapter-content { padding-left: 30px; padding-right: 30px; } }
+@media (max-width: 820px), (max-width: 1100px) and (max-height: 500px) {
+  .magazine-reader { height: 100dvh; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .reader-header { min-height: 68px; height: 68px; padding: env(safe-area-inset-top, 0px) 22px 0; flex-shrink: 0; }
+  .reader-header .brand-copy { font-size: 17px; }
+  .reader-header .prism { width: 31px; height: 29px; }
+  .reader-header .brand { gap: 12px; }
+  .reader-header-label, .reader-sidebar, .reader-desktop-hint { display: none; }
+  .reader-back { font-size: 8px; letter-spacing: .8px; }
+  .reader-back span { margin-left: 8px; }
+  .reader-layout { display: flex; flex: 1; min-height: 0; width: 100%; margin: 0; padding: 0; }
+  .reader-book { width: 100%; height: 100%; min-height: 0; border: 0; box-shadow: none; }
+  .reader-toolbar { padding: 0 22px; min-height: 47px; }
+  .reader-tabs a { padding: 0 13px; min-height: 42px; }
+  .reader-tabs a > span { display: none; }
+  .reader-cover-content { padding: 23px 26px 20px; }
+  .reader-cover-topline { margin-bottom: 20px; font-size: 7px; }
+  .reader-poster { width: min(54%, 228px); }
+  .reader-cover-heading { margin-top: 24px; }
+  .reader-cover h1 { font-size: clamp(36px, 10vw, 54px); }
+  .reader-cover-heading > p:not(.reader-kicker) { max-width: 340px; margin: 11px auto 14px; font-size: 17px; }
+  .reader-swipe-hint { margin-top: 20px; }
+  .reader-chapter-content { padding: 24px 27px; }
+  .reader-page-topline { margin-bottom: 32px; font-size: 7px; }
+  .reader-chapter-content h2 { font-size: clamp(32px, 8.7vw, 43px); }
+  .reader-lead { font-size: 19px; }
+  .reader-paragraph { font-size: 17px; }
+  .reader-controls { padding: 0 20px env(safe-area-inset-bottom, 0px); min-height: calc(62px + env(safe-area-inset-bottom, 0px)); }
+  .reader-dialog { margin: auto auto 0; width: 100%; max-height: 85dvh; border-radius: 17px 17px 0 0; border-bottom: 0; }
+  .reader-dialog-inner { padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 820px) and (max-height: 740px) {
+  .reader-cover-content { padding-top: 16px; }
+  .reader-cover-topline { margin-bottom: 13px; }
+  .reader-poster { width: 145px; }
+  .reader-cover-heading { margin-top: 17px; }
+  .reader-cover-heading .reader-kicker { font-size: 7px; margin-bottom: 8px; }
+  .reader-cover h1 { font-size: 35px; }
+  .reader-cover-heading > p:not(.reader-kicker) { font-size: 16px; margin: 9px auto; }
+  .reader-anniversary { font-size: 8px; }
+  .reader-swipe-hint { margin-top: 11px; }
+}
+@media (prefers-reduced-motion: reduce) { .magazine-reader *, .magazine-reader *::before, .magazine-reader *::after { scroll-behavior: auto; transition: none !important; } }

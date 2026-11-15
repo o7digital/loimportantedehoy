@@ -2,6 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 import { site } from "../config/site";
+import { latestMagazine } from "../data/magazines";
 
 const editions = [
   { number: "Nº 218", date: "30 AGO 1973", title: "El día en que The Doors anunció su disolución", category: "Música e Historia", featured: true },
@@ -30,7 +31,7 @@ export default function Home() {
     <main id="top">
       <header className="site-header">
         <a className="brand" href="/" aria-label="Lo importante de hoy — inicio"><Prism /><span className="brand-copy">Lo <b>importante</b><br />de hoy</span></a>
-        <nav className={menuOpen ? "nav open" : "nav"} aria-label="Navegación principal"><a href="/ediciones" onClick={() => setMenuOpen(false)}>Ediciones</a><a href="#manifiesto" onClick={() => setMenuOpen(false)}>Manifiesto</a><a href="/membresia" onClick={() => setMenuOpen(false)}>Membresía</a></nav>
+        <nav className={menuOpen ? "nav open" : "nav"} aria-label="Navegación principal"><a href="/revista" onClick={() => setMenuOpen(false)}>La revista</a><a href="/ediciones" onClick={() => setMenuOpen(false)}>Ediciones</a><a href="#manifiesto" onClick={() => setMenuOpen(false)}>Manifiesto</a><a href="/membresia" onClick={() => setMenuOpen(false)}>Membresía</a></nav>
         <div className="header-actions"><a className="login-link" href="/acceder">Acceder</a><button className="header-cta" type="button" onClick={() => setModalOpen(true)}>Hazte miembro <Arrow /></button></div>
         <button className="menu-button" type="button" onClick={() => setMenuOpen((value) => !value)} aria-label="Abrir menú" aria-expanded={menuOpen}><span /><span /></button>
       </header>
@@ -41,6 +42,8 @@ export default function Home() {
         <div className="cover-stage"><div className="cover-shadow" /><article className="typographic-cover" aria-label="Composición editorial The Doors — 1973"><small>HISTORIA DE LA MÚSICA</small><span>THE</span><strong>DOORS</strong><i></i><b>1973</b><p>EL DÍA EN QUE<br />SE CERRÓ UNA ERA</p></article><div className="cover-note"><span>ARTÍCULO PRINCIPAL</span><strong>The Doors</strong><small>El final de una banda que cambió el rostro del rock.</small></div></div>
         <div className="hero-rail"><span>HECHOS</span><i /><span>PERSONAJES</span><i /><span>MÚSICA</span><i /><span>IDEAS</span></div>
       </section>
+
+      <a className="magazine-invitation" href="/revista"><img src={latestMagazine.image} alt="Portada de la revista de Frida" width="80" height="100" loading="lazy" /><div><span>LA REVISTA · {latestMagazine.dateLabel.toUpperCase()}</span><h2>{latestMagazine.title}<em>{latestMagazine.subtitle}</em></h2><p>Una historia, página a página. Hecha para leer en tu móvil.</p></div><strong>Hojear la revista <Arrow /></strong></a>
 
       <section className="intro" id="manifiesto">
         <div className="section-index">01 <span /> UNA PAUSA EN EL RUIDO</div>
