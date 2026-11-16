@@ -47,14 +47,27 @@ services:
       RATE_LIMITER_POINTS: 600
       RATE_LIMITER_DURATION: 60
       LOG_LEVEL: warn
+      STUDIO_RENDER_URL: http://renderer:3000
+      STUDIO_RENDER_KEY: ${STUDIO_RENDER_KEY:?Studio render key required}
     volumes:
       - uploads:/directus/uploads
+      - ./extensions:/directus/extensions:ro
     networks:
       default:
       ingress:
         aliases: [loimportante-directus]
     mem_limit: 1024m
     cpus: 1.0
+  renderer:
+    build: ./renderer
+    restart: unless-stopped
+    environment:
+      PUBLIC_URL: ${PUBLIC_URL}
+      STUDIO_RENDER_KEY: ${STUDIO_RENDER_KEY:?Studio render key required}
+    mem_limit: 1024m
+    cpus: 1.0
+    shm_size: 256m
+    security_opt: [no-new-privileges:true]
 volumes:
   postgres:
     name: loimportante-cms_postgres_v11

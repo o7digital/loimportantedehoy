@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node --env-file-if-exists=.env --test tests/theme.test.mjs tests/cms.test.mjs",
+    "test": "node --env-file-if-exists=.env --test tests/theme.test.mjs tests/cms.test.mjs tests/studio.test.mjs",
     "test:reader": "node tests/reader.mjs"
   },
   "dependencies": {

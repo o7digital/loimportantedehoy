@@ -61,3 +61,43 @@ sudo /srv/loimportantedehoy/backup.sh
 ```
 
 Une sauvegarde quotidienne de PostgreSQL et des médias est conservée 14 jours sous `backups/`. Le script vérifie le catalogue du dump et l'archive des médias. La première sauvegarde est aussi copiée dans le dossier privé de configuration du Mac. Il s'agit d'une copie initiale indépendante, pas d'une réplication continue du serveur vers le Mac.
+
+## Studio de publication : desktop, mobile et Instagram
+
+Ouvrir **Studio de publicación** dans la barre de modules, ou directement :
+https://revista-cms.92.222.23.247.sslip.io/admin/revista-studio
+
+1. Choisir la journée, y compris un brouillon ou une édition future.
+2. Dans **Editar edición**, modifier les pages et les illustrations. **Colores y tipografía** ouvre la charte globale ; les couleurs propres à la journée restent dans **Estilo de esta edición**.
+3. Enregistrer puis cliquer **Actualizar vista previa**. Desktop et Mobile utilisent le composant React du lecteur public, avec toutes ses pages. Le sélecteur de page permet de choisir celle à exporter.
+4. **Instagram** compose un véritable cartel éditorial : illustration, titre, anniversaire, photo secondaire, biographie, chiffres, faits, détails, citation, chanson et sources. Il reprend la palette et les polices de Directus. Il n'utilise pas la couverture aplatie comme image finale.
+5. Pour adapter le texte au 4:5, ouvrir **Formato Instagram · Textos cortos opcionales** dans l'édition. Les champs vides héritent des pages de la revue. On peut choisir une autre photo secondaire. Si un texte dépasse même après ajustement de sa taille, l'export indique quel texte raccourcir.
+6. Télécharger le PNG : Instagram **1080 × 1350**, Desktop **1440 × 1000**, Mobile **780 × 1688** (vue 390 × 844 à 2×). Desktop et Mobile exportent la page sélectionnée ; la version web conserve le lecteur complet. La génération d'une image ne publie pas l'édition.
+
+Les previews et exports utilisent la session Directus et les permissions de l'utilisateur. Ils relisent le contenu enregistré à chaque demande, sans token dans les URL. Les brouillons restent privés ; les PNG sont téléchargés directement et ne sont pas ajoutés à la médiathèque publique. Les ressources compilées du lecteur sont publiques et ne contiennent ni contenu éditorial ni identifiants.
+
+Le rendu PNG utilise Firefox dans le service Docker privé `renderer`, sans port publié, avec une clé partagée `STUDIO_RENDER_KEY` dans le `.env` serveur. Ses requêtes réseau sont limitées aux médias et ressources du CMS. Une seule génération tourne à la fois ; en cas d'occupation, le studio invite à réessayer.
+
+Construction et installation de l'extension native (SDK 17.1.4 compatible avec Directus 11.17.4) :
+
+```sh
+npm ci --prefix cms/extensions
+npm run build --prefix cms/extensions
+node --env-file="$HOME/.config/loimportantedehoy/directus-admin.env" cms/studio.mjs
+```
+
+Copier `cms/extensions/package.json` et `cms/extensions/dist/` dans `/srv/loimportantedehoy/extensions/directus-extension-revista-studio/`. Copier `cms/renderer/` et `cms/compose.yml` à côté. Ajouter une clé aléatoire de 64 caractères à `.env`, puis exécuter `sudo docker compose build renderer` et `sudo docker compose up -d`. Lors d'une mise à jour de l'extension, redémarrer Directus. La migration `studio.mjs` conserve les entrées existantes de la barre de modules et n'écrase aucun texte.
+
+Vérifications des exports (création et suppression d'un brouillon de test isolé) :
+
+```sh
+RUN_CMS_WRITE_TESTS=1 node --env-file=.env --env-file="$HOME/.config/loimportantedehoy/directus-admin.env" --test tests/studio.test.mjs
+```
+
+La home et `/revista` utilisent la dernière édition publiée à la date du Mexique. En l'absence d'une nouvelle publication aujourd'hui, la home présente celle d'hier, avec son titre, sa date, son illustration et ses couleurs.
+
+La vérification de l'interface native dans Firefox couvre les trois aperçus, le téléchargement effectif des PNG, les changements de page et de journée :
+
+```sh
+node --env-file="$HOME/.config/loimportantedehoy/directus-admin.env" tests/studio-browser.mjs
+```

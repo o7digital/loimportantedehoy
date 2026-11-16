@@ -37,7 +37,7 @@ function EditionPage({ chapter, edition, index, nextEdition }: { chapter: Magazi
   return <div className="journal-page-inner journal-story-layout"><div className="journal-story-heading"><p className="journal-eyebrow">{number(index)} / {chapter.kicker}</p><h2>{chapter.title}</h2><Photograph edition={edition} chapter={chapter} /></div><div className="journal-story-body"><span className="journal-section-caption">LA HISTORIA DETRÁS DEL NOMBRE</span>{chapter.intro && <p className="journal-lead">{chapter.intro}</p>}{chapter.paragraphs?.map((paragraph, i) => <p className={`journal-body-text${i === 0 ? " journal-dropcap" : ""}`} key={paragraph}>{paragraph}</p>)}<div className="journal-story-end"><span /><em>Lo importante permanece.</em></div></div></div>;
 }
 
-export default function MagazineReader({ edition, editions }: { edition: Magazine; editions: Magazine[] }) {
+export default function MagazineReader({ edition, editions, syncUrl = true, initialChapter }: { edition: Magazine; editions: Magazine[]; syncUrl?: boolean; initialChapter?: string }) {
   const theme = resolveTheme(edition.theme);
   const [current, setCurrent] = useState(0);
   const [ready, setReady] = useState(false);
@@ -57,19 +57,19 @@ export default function MagazineReader({ edition, editions }: { edition: Magazin
   useEffect(() => {
     const container = track.current;
     if (!container) return;
-    const fromHash = () => { const index = Math.max(0, edition.chapters.findIndex(chapter => `#${chapter.id}` === location.hash)); active.current = index; goTo(index, false); setCurrent(index); };
-    fromHash(); setReady(true); window.addEventListener("hashchange", fromHash);
+    const fromHash = () => { const index = Math.max(0, edition.chapters.findIndex(chapter => initialChapter ? chapter.id === initialChapter : `#${chapter.id}` === location.hash)); active.current = index; goTo(index, false); setCurrent(index); };
+    fromHash(); setReady(true); if (syncUrl) window.addEventListener("hashchange", fromHash);
     let width = container.clientWidth;
     const observer = new ResizeObserver(() => { if (width !== container.clientWidth) { width = container.clientWidth; goTo(active.current, false); } });
     observer.observe(container);
     return () => { observer.disconnect(); window.removeEventListener("hashchange", fromHash); };
-  }, [edition.date]);
+  }, [edition.date, syncUrl, initialChapter]);
   useEffect(() => {
     if (!ready) return;
-    active.current = current; history.replaceState(null, "", `#${edition.chapters[current].id}`);
+    active.current = current; if (syncUrl) history.replaceState(null, "", `#${edition.chapters[current].id}`);
     const tab = tabs.current?.children[current] as HTMLElement | undefined;
     if (tab && tabs.current) tabs.current.scrollTo({ left: tab.offsetLeft - tabs.current.offsetLeft - 20, behavior: "instant" });
-  }, [current, ready, edition]);
+  }, [current, ready, edition, syncUrl]);
   useEffect(() => { if (sheet) dialog.current?.showModal(); else dialog.current?.close(); }, [sheet]);
   useEffect(() => {
     const handle = (event: KeyboardEvent) => {
