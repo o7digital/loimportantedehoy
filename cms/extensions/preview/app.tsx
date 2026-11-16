@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '../../../src/styles/global.css';
+import { initEditing } from './editing.js';
 import MagazineReader from '../../../src/components/MagazineReader';
 
 const snapshot = JSON.parse(document.getElementById('studio-data')!.textContent!);
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')!).render(<MagazineReader edition={sna
     await Promise.all([...document.querySelectorAll<HTMLImageElement>('.journal-page[data-current=true] img')].map(img => img.decode()));
     await new Promise(resolve => setTimeout(resolve, 200));
     if (!document.querySelector('.journal-track')) throw new Error('Reader not ready');
+    initEditing(snapshot);
     (window as any).__STUDIO_READY__ = true;
   } catch { (window as any).__STUDIO_ERROR__ = 'No se pudo cargar una imagen. Comprueba los archivos de esta edición.'; }
 })();

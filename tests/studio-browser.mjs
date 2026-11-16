@@ -10,72 +10,96 @@ for (let attempt = 0; attempt < 30; attempt++) {
 }
 const browser = await firefox.launch();
 try {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
-  const errors = [];
-  page.on('pageerror', error => errors.push(error.message));
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1100 } });
+  const errors = []; page.on('pageerror', error => { errors.push(error.message); console.error(error.message); });
   await page.goto(`${base}/admin/login`, { waitUntil: 'domcontentloaded' });
   await page.locator('input[type=email]').fill(process.env.ADMIN_EMAIL);
   await page.locator('input[type=password]').fill(process.env.ADMIN_PASSWORD);
   await page.locator('button[type=submit]').click();
   await page.waitForURL(url => !url.pathname.includes('/login'), { waitUntil: 'domcontentloaded' });
-  // Dismiss the optional project-owner reminder without accepting any terms.
   const later = page.getByRole('button', { name: 'Remind Later', exact: true });
   await later.waitFor({ timeout: 10000 }).then(() => later.click()).catch(() => {});
-  await page.goto(`${base}/admin/revista-studio`, { waitUntil: 'domcontentloaded' });
-  await page.locator('.publication-studio iframe').waitFor();
+  await page.goto(`${base}/admin/revista-studio?edition=1`, { waitUntil: 'domcontentloaded' });
+  await page.locator('.ed-artboard iframe').waitFor();
   async function ready() {
     await page.waitForFunction(() => {
-      const frame = document.querySelector('.publication-studio iframe');
+      const frame = document.querySelector('.ed-artboard iframe');
       return frame?.contentWindow?.__STUDIO_READY__ || frame?.contentWindow?.__STUDIO_ERROR__;
     });
-    assert.equal(await page.locator('iframe').evaluate(frame => frame.contentWindow.__STUDIO_ERROR__), undefined);
-    await page.waitForFunction(() => !document.querySelector('.studio-loading'));
+    assert.equal(await page.locator('.ed-artboard iframe').evaluate(frame => frame.contentWindow.__STUDIO_ERROR__), undefined);
+    await page.waitForFunction(() => !document.querySelector('.ed-canvas.composing'));
   }
   async function refresh(action) {
-    const oldFrame = await page.locator('.publication-studio iframe').elementHandle();
+    const previous = await page.locator('.ed-artboard iframe').elementHandle();
     await action();
-    await page.waitForFunction(previous => {
-      const current = document.querySelector('.publication-studio iframe');
-      return current && current !== previous;
-    }, oldFrame);
-    await oldFrame.dispose();
-    await ready();
+    await page.waitForFunction(previous => { const current = document.querySelector('.ed-artboard iframe'); return current && current !== previous; }, previous);
+    await previous.dispose(); await ready();
   }
+  const preview = () => page.frameLocator('.ed-artboard iframe');
   await ready();
-  const selector = page.locator('.studio-toolbar select');
-  assert.ok((await selector.locator('option').count()) >= 3);
-  assert.ok(await page.getByRole('link', { name: 'Editar edición' }).isVisible());
-  await page.screenshot({ path: '/tmp/revista-studio-final.png', fullPage: true });
-  const exportFormats = process.env.STUDIO_LAYOUT_ONLY === '1' ? [] : [['Instagram', 1080, 1350], ['Desktop', 1440, 1000], ['Mobile', 780, 1688]];
-  for (const [format, width, height] of exportFormats) {
-    if (format !== 'Instagram') {
-      await refresh(() => page.getByRole('button', { name: new RegExp(`^${format}`) }).click());
-      if (await page.locator('.page-select select').inputValue() !== 'portada') await refresh(() => page.locator('.page-select select').selectOption('portada'));
-      assert.equal(await page.frameLocator('iframe').locator('.journal-page').count(), 6);
-      await page.frameLocator('iframe').getByRole('button', { name: 'Página siguiente', exact: true }).click();
-      await page.waitForFunction(() => document.querySelector('iframe').contentDocument.querySelector('.journal-page[data-current=true]')?.id === 'historia');
-      await refresh(() => page.locator('.page-select select').selectOption('historia'));
-      assert.equal(await page.frameLocator('iframe').locator('.journal-page[data-current=true]').getAttribute('id'), 'historia');
+  assert.equal(await page.locator('.ed-form').getByLabel('Personaje o tema', { exact: true }).inputValue(), 'Frida');
+  await page.screenshot({ path: '/tmp/revista-editor-desktop.png' });
+  if (process.env.STUDIO_LAYOUT_ONLY !== '1') {
+    await refresh(() => page.locator('.ed-form').getByLabel('Personaje o tema', { exact: true }).fill('Frida test'));
+    assert.ok((await preview().locator('.journal-cover-copy h1').innerText()).includes('Frida test'));
+    await preview().locator('.journal-cover-copy h1').click();
+    await page.waitForFunction(() => document.activeElement?.dataset.editorField === 'titulo');
+    const live = await (await fetch(`${base}/items/ediciones/1?fields=titulo`)).json(); assert.equal(live.data.titulo, 'Frida');
+    await refresh(() => page.locator('.ed-page-nav').getByRole('button').filter({ hasText: 'Su historia' }).click());
+    await refresh(() => page.locator('.ed-form').getByLabel('El texto de tu historia', { exact: true }).fill('Un párrafo de prueba todavía sin guardar.'));
+    assert.ok((await preview().locator('.journal-page[data-current=true]').innerText()).includes('Un párrafo de prueba todavía sin guardar.'));
+    await preview().locator('.journal-page[data-current=true] h2').click();
+    await page.waitForFunction(() => document.activeElement?.dataset.editorField === 'titulo');
+    await page.getByRole('button', { name: 'Colores y tipografía', exact: true }).click();
+    await refresh(() => page.getByRole('textbox', { name: 'Código de Fondo', exact: true }).fill('#112244'));
+    assert.equal(await preview().locator('.journal').evaluate(node => node.style.getPropertyValue('--j-paper')), '#112244');
+    await page.getByRole('button', { name: 'Portada y edición', exact: true }).click();
+    await ready();
+    const photo = page.locator('.ed-media').filter({ has: page.locator('.ed-media-label', { hasText: 'Fotografía de la edición' }) });
+    await photo.getByRole('button', { name: /Cambiar imagen/ }).click();
+    await page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'La imagen también cuenta.' }) }).locator('.ed-media-grid button').first().waitFor();
+    await page.getByRole('button', { name: 'Cerrar biblioteca' }).click();
+    console.log('PASS: unsaved text edits, canvas selection, page editing, colors and image library. Published content retained.');
+    for (const [format, width, height] of [['Desktop', 1440, 1000], ['Mobile', 780, 1688], ['Instagram', 1080, 1350]]) {
+      const button = page.getByRole('button', { name: format, exact: true });
+      if (await button.getAttribute('aria-pressed') !== 'true') await refresh(() => button.click());
+      else await ready();
+      const downloaded = page.waitForEvent('download');
+      await page.locator('.ed-export-button').click(); const download = await downloaded;
+      assert.equal(await download.failure(), null); const png = await readFile(await download.path());
+      assert.equal(png.readUInt32BE(16), width); assert.equal(png.readUInt32BE(20), height);
+      console.log(`PASS: unsaved ${format} export ${width}×${height}.`);
     }
-    const downloaded = page.waitForEvent('download');
-    await page.locator('.generate-button').click();
-    const download = await downloaded;
-    assert.equal(await download.failure(), null);
-    const png = await readFile(await download.path());
-    assert.equal(png.subarray(1, 4).toString(), 'PNG');
-    assert.equal(png.readUInt32BE(16), width); assert.equal(png.readUInt32BE(20), height);
-    console.log(`PASS: native ${format} preview and authenticated ${width}×${height} PNG download.`);
+    await page.locator('.ed-issue').filter({ hasText: 'Leon Russell' }).click();
+    await page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Tu historia aún tiene cambios.' }) }).waitFor();
+    await page.getByRole('button', { name: 'Seguir editando', exact: true }).click();
+    assert.ok((await page.locator('.ed-edition-heading h1').innerText()).includes('Frida test'));
+    await page.locator('.ed-issue').filter({ hasText: 'Leon Russell' }).click();
+    await refresh(() => page.getByRole('button', { name: 'Descartar cambios', exact: true }).click());
+    console.log('PASS: unsaved-change guard keeps the draft until an explicit discard.');
   }
-  await refresh(() => page.getByRole('button', { name: /^Instagram/ }).click());
-  for (const [label, title] of [['2026-11-13 · Leon Russell', 'Leon Russell'], ['2026-11-12 · Abbey Road Studios', 'Abbey Road Studios']]) {
-    await refresh(() => selector.selectOption({ label }));
-    assert.equal(await page.frameLocator('iframe').locator('.p-title').innerText(), title);
-    const overflow = await page.locator('iframe').evaluate(frame => [...frame.contentDocument.querySelectorAll('[data-fit]')].filter(block => {
-      const box = block.getBoundingClientRect();
-      return box.right > 1081 || box.left < -1;
-    }).map(block => block.className));
+  if (await page.getByRole('button', { name: 'Instagram', exact: true }).getAttribute('aria-pressed') !== 'true') await refresh(() => page.getByRole('button', { name: 'Instagram', exact: true }).click());
+  for (const title of ['Leon Russell', 'Abbey Road Studios']) {
+    const issue = page.locator('.ed-issue').filter({ hasText: title });
+    if (!(await issue.getAttribute('class')).includes('selected')) await refresh(() => issue.click());
+    assert.equal(await preview().locator('.p-title').innerText(), title);
+    const overflow = await page.locator('.ed-artboard iframe').evaluate(frame => [...frame.contentDocument.querySelectorAll('[data-fit]')].filter(block => { const box = block.getBoundingClientRect(); return box.right > 1081 || box.left < -1; }).map(block => block.className));
     assert.deepEqual(overflow, [], title);
   }
+  for (const [width, height] of [[1440, 1000], [1024, 768], [390, 844], [320, 568]]) {
+    await page.setViewportSize({ width, height });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
+    if (width < 760) {
+      await page.getByRole('button', { name: 'Vista previa', exact: true }).click();
+      await page.getByRole('button', { name: 'Editar contenido', exact: true }).click();
+      await page.getByRole('button', { name: 'Abrir navegación', exact: true }).click();
+      await page.waitForFunction(() => Math.abs(document.querySelector('.ed-sidebar').getBoundingClientRect().left) < 1);
+      assert.ok(Math.abs(await page.locator('.ed-sidebar').evaluate(node => node.getBoundingClientRect().left)) < 1);
+      await page.getByRole('button', { name: 'Cerrar navegación', exact: true }).click({ position: { x: width - 10, y: 100 } });
+      await page.waitForFunction(() => document.querySelector('.ed-sidebar').getBoundingClientRect().right < 1);
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 }); await page.screenshot({ path: '/tmp/revista-editor-mobile.png' });
   assert.deepEqual(errors, []);
-  console.log(process.env.STUDIO_LAYOUT_ONLY === '1' ? 'PASS: three Instagram layouts, long headlines, edition switching and no browser errors.' : 'PASS: edition switching, interactive page turning, page selection and no browser errors.');
+  console.log('PASS: long Instagram headlines, responsive editor at 320–1600px, mobile navigation and no browser errors.');
 } finally { await browser.close(); }

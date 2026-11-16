@@ -1,7 +1,10 @@
 import { readFile } from 'node:fs/promises';
+import { installEditor } from './editor.js';
+import { EditorValidationError } from '../shared/editor-model.js';
 import { makeDocument, formats, StudioValidationError } from './document.js';
 
-export default (router, { services, getSchema, env }) => {
+export default (router, context) => {
+  const { services, getSchema, env } = context;
   const { ItemsService } = services;
   const baseUrl = String(env.PUBLIC_URL).replace(/\/$/, '');
   const assets = new Map([['reader.js', 'text/javascript'], ['poster.js', 'text/javascript'], ['reader.css', 'text/css'], ['poster.css', 'text/css']]);
@@ -36,20 +39,22 @@ export default (router, { services, getSchema, env }) => {
     try { const { html } = await snapshot(request); response.type('html').send(html); }
     catch (error) { next(error); }
   });
+  async function renderPng(response, html, format, date, page) {
+    const render = await fetch(`${env.STUDIO_RENDER_URL}/render`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-render-key': env.STUDIO_RENDER_KEY }, body: JSON.stringify({ html, format }), signal: AbortSignal.timeout(40000) });
+    if (!render.ok) {
+      const payload = await render.json().catch(() => ({}));
+      response.status(render.status).json({ errors: [{ message: payload.error || 'El generador no está disponible. Inténtalo de nuevo.' }] }); return;
+    }
+    const filename = `${date.slice(0, 10)}-${format}${page ? `-${page.replace(/[^a-z0-9-]/gi, '')}` : ''}.png`;
+    response.set({ 'Content-Type': 'image/png', 'Content-Disposition': `attachment; filename="${filename}"` }).send(Buffer.from(await render.arrayBuffer()));
+  }
   router.post('/generate/:id/:format', async (request, response, next) => {
-    try {
-      const { html, edition, page } = await snapshot(request);
-      const render = await fetch(`${env.STUDIO_RENDER_URL}/render`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-render-key': env.STUDIO_RENDER_KEY }, body: JSON.stringify({ html, format: request.params.format }), signal: AbortSignal.timeout(40000) });
-      if (!render.ok) {
-        const payload = await render.json().catch(() => ({}));
-        response.status(render.status).json({ errors: [{ message: payload.error || 'El generador no está disponible. Inténtalo de nuevo.' }] }); return;
-      }
-      const filename = `${edition.fecha.slice(0, 10)}-${request.params.format}${page ? `-${page.replace(/[^a-z0-9-]/gi, '')}` : ''}.png`;
-      response.set({ 'Content-Type': 'image/png', 'Content-Disposition': `attachment; filename="${filename}"` }).send(Buffer.from(await render.arrayBuffer()));
-    } catch (error) { next(error); }
+    try { const { html, edition, page } = await snapshot(request); await renderPng(response, html, request.params.format, edition.fecha, page); }
+    catch (error) { next(error); }
   });
+  installEditor(router, context, baseUrl, renderPng);
   router.use((error, request, response, next) => {
-    if (error instanceof StudioValidationError) response.status(422).json({ errors: [{ message: error.message }] });
+    if (error instanceof StudioValidationError || error instanceof EditorValidationError) response.status(error.status || 422).json({ errors: [{ message: error.message }] });
     else next(error);
   });
 };

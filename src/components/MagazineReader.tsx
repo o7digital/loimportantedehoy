@@ -12,7 +12,8 @@ function Photograph({ edition, chapter, cover = false }: { edition: Magazine; ch
   const cutout = cover && edition.coverCutout;
   const credit = cutout ? "Ilustración de JerryMC" : chapter?.photoCredit || edition.photoCredit;
   const source = cutout ? edition.image : chapter?.photoSource || edition.photoSource;
-  return <figure className={`journal-photograph${cutout ? " journal-cutout" : ""}`}><img src={cutout || chapter?.image || edition.photograph || edition.image} alt={cutout ? `${edition.title} · Ilustración de la edición original` : edition.title} style={{ objectPosition: edition.photoPosition || "50% 50%" }} loading={chapter ? "lazy" : "eager"} fetchPriority={chapter ? "auto" : "high"} /><figcaption>{credit}{source && <> · <a href={source} target="_blank" rel="noreferrer">Fuente ↗</a></>}</figcaption></figure>;
+  const sourceImage = cutout || chapter?.image || edition.photograph || edition.image;
+  return <figure className={`journal-photograph${cutout ? " journal-cutout" : ""}`}>{sourceImage ? <img src={sourceImage} alt={cutout ? `${edition.title} · Ilustración de la edición original` : edition.title} style={{ objectPosition: edition.photoPosition || "50% 50%" }} loading={chapter ? "lazy" : "eager"} fetchPriority={chapter ? "auto" : "high"} /> : <div className="journal-image-placeholder"><span>UNA IMAGEN PARA ESTA HISTORIA</span><p>Tu próxima edición empieza aquí.</p></div>}<figcaption>{credit}{source && <> · <a href={source} target="_blank" rel="noreferrer">Fuente ↗</a></>}</figcaption></figure>;
 }
 function MusicPlayer({ chapter }: { chapter: MagazineChapter }) {
   const [playing, setPlaying] = useState(false);

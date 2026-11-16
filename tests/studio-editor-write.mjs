@@ -1,0 +1,83 @@
+import { firefox } from 'playwright';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+if (process.env.RUN_CMS_WRITE_TESTS !== '1') throw new Error('Set RUN_CMS_WRITE_TESTS=1 to create and clean up an isolated test edition.');
+const base = process.env.PUBLIC_URL;
+for (let attempt = 0; attempt < 35; attempt++) { if ((await fetch(`${base}/server/health`).catch(() => ({ status: 0 }))).status === 200) break; await new Promise(resolve => setTimeout(resolve, 1000)); }
+const login = await fetch(`${base}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD }) });
+const { data: { access_token } } = await login.json();
+const headers = { Authorization: `Bearer ${access_token}`, 'Content-Type': 'application/json' };
+async function api(path, body, method = 'GET') { const r = await fetch(base + path, { method, headers, ...(body ? { body: JSON.stringify(body) } : {}) }); const text = await r.text(); assert.ok(r.ok, `${path}: ${r.status} ${text.slice(0, 180)}`); return r.status === 204 ? undefined : JSON.parse(text).data; }
+const rows = await api('/items/ediciones?fields=fecha,foto&limit=1000');
+const used = new Set(rows.map(row => row.fecha.slice(0, 10)));
+const date = Array.from({ length: 28 }, (_, i) => `1900-04-${String(i + 1).padStart(2, '0')}`).find(value => !used.has(value));
+const photoId = rows.find(row => row.foto).foto;
+let id; let uploadedFile;
+const browser = await firefox.launch();
+try {
+  const p = await browser.newPage({ viewport: { width: 1600, height: 1100 } }); const errors = [];
+  p.on('pageerror', error => errors.push(error.message));
+  await p.goto(base + '/admin/login', { waitUntil: 'domcontentloaded' });
+  await p.locator('input[type=email]').fill(process.env.ADMIN_EMAIL); await p.locator('input[type=password]').fill(process.env.ADMIN_PASSWORD); await p.locator('button[type=submit]').click();
+  await p.waitForURL(url => !url.pathname.includes('/login'), { waitUntil: 'domcontentloaded' });
+  const later = p.getByRole('button', { name: 'Remind Later', exact: true }); await later.waitFor({ timeout: 10000 }).then(() => later.click()).catch(() => {});
+  await p.goto(base + '/admin/revista-studio?edition=1', { waitUntil: 'domcontentloaded' }); await p.locator('.ed-form').waitFor();
+  await p.getByRole('button', { name: 'Nueva edición', exact: true }).click();
+  const creation = p.getByRole('dialog').filter({ has: p.getByRole('heading', { name: '¿Qué historia importa hoy?' }) });
+  await creation.getByLabel('Personaje o tema').fill('Revista de prueba editorial'); await creation.getByLabel('Fecha de publicación').fill(date);
+  const created = p.waitForResponse(response => response.url().endsWith('/revista-studio/document') && response.request().method() === 'POST');
+  await creation.getByRole('button', { name: 'Crear borrador' }).click(); const createdResponse = await created; assert.equal(createdResponse.status(), 201);
+  const record = (await createdResponse.json()).data; id = record.edition.id;
+  await p.waitForURL(url => url.searchParams.get('edition') === String(id));
+  await p.locator('.ed-form').getByLabel('Personaje o tema', { exact: true }).fill('Una edición creada y editada');
+  await p.locator('.ed-form').getByLabel('El título que acompaña la portada', { exact: true }).fill('Una historia que se edita desde su propio Studio.');
+  await p.locator('.ed-page-nav').getByRole('button').filter({ hasText: 'Su historia' }).click();
+  await p.locator('.ed-form').getByLabel('El texto de tu historia', { exact: true }).fill('Texto escrito desde el editor visual.\n\nUn segundo párrafo guardado en Directus.');
+  await p.getByRole('button', { name: 'Añadir página', exact: true }).click();
+  const adding = p.getByRole('dialog').filter({ has: p.getByRole('heading', { name: 'Elige cómo contarla.' }) });
+  await adding.getByRole('button', { name: /Datos/ }).click(); await adding.getByRole('button', { name: 'Añadir página', exact: true }).click();
+  await p.getByRole('button', { name: 'Añadir cifra', exact: true }).click();
+  await p.locator('.ed-form').getByLabel('Cifra', { exact: true }).fill('12'); await p.locator('.ed-form').getByLabel('Qué significa', { exact: true }).fill('historias para descubrir');
+  await p.getByRole('button', { name: 'Subir página', exact: true }).click();
+  await p.getByRole('button', { name: 'Portada y edición', exact: true }).click();
+  const photo = p.locator('.ed-media').filter({ has: p.locator('.ed-media-label', { hasText: 'Fotografía de la edición' }) });
+  await photo.getByRole('button', { name: /Elegir imagen/ }).click();
+  await p.locator('.ed-media-grid button').filter({ has: p.locator(`img[src*="${photoId}"]`) }).click();
+  // Exercise the actual upload button and the normal Directus file API.
+  await photo.getByRole('button', { name: /Cambiar imagen/ }).click();
+  const uploaded = p.waitForResponse(response => response.url().endsWith('/files') && response.request().method() === 'POST');
+  const chooser = p.waitForEvent('filechooser');
+  await p.getByRole('button', { name: 'Subir una imagen', exact: true }).click();
+  await (await chooser).setFiles({ name: `studio-qa-upload-${Date.now()}.jpg`, mimeType: 'image/jpeg', buffer: await readFile(new URL('../public/editorial/frida.jpg', import.meta.url)) });
+  const uploadResponse = await uploaded; assert.ok(uploadResponse.ok()); uploadedFile = (await uploadResponse.json()).data.id;
+  await p.getByRole('heading', { name: 'La imagen también cuenta.' }).waitFor({ state: 'hidden' });
+  await p.getByText('Créditos, fuentes y otros detalles', { exact: true }).click();
+  await p.locator('.ed-form').getByLabel('Fuentes editoriales', { exact: true }).fill('Fuente de prueba uno\nFuente de prueba dos');
+  const saved = p.waitForResponse(response => response.url().endsWith(`/revista-studio/document/${id}`) && response.request().method() === 'PATCH');
+  await p.getByRole('button', { name: 'Guardar cambios', exact: true }).click(); const savedResponse = await saved;
+  assert.equal(savedResponse.status(), 200); await p.getByText('Cambios guardados en Directus.', { exact: true }).waitFor();
+  let document = await api(`/revista-studio/document/${id}`);
+  assert.equal(document.edition.titulo, 'Una edición creada y editada'); assert.equal(document.edition.paginas.length, 5); assert.equal(document.edition.foto, uploadedFile);
+  assert.ok(document.edition.paginas.find(row => row.slug === 'historia').contenido.includes('Texto escrito desde el editor visual.'));
+  assert.equal(document.edition.paginas[3].cifras[0].value, '12'); assert.equal(document.edition.estado, 'draft');
+  assert.deepEqual(document.edition.fuentes, ['Fuente de prueba uno', 'Fuente de prueba dos']);
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  await p.waitForFunction(() => document.querySelector('[data-editor-field=titulo]')?.value === 'Una edición creada y editada');
+  assert.equal(await p.locator('.ed-page-nav button').count(), 5);
+  const published = p.waitForResponse(response => response.url().endsWith(`/revista-studio/document/${id}`) && response.request().method() === 'PATCH');
+  await p.getByRole('button', { name: 'Publicar', exact: true }).click(); assert.equal((await published).status(), 200);
+  document = await api(`/revista-studio/document/${id}`); assert.equal(document.edition.estado, 'published');
+  assert.ok(document.edition.paginas.every(row => row.estado === 'published'));
+  assert.equal((await (await fetch(`${base}/items/ediciones?filter[id][_eq]=${id}`)).json()).data.length, 1);
+  await p.locator('.ed-page-nav button').filter({ hasText: 'Momentos' }).click();
+  await p.getByRole('button', { name: 'Retirar esta página de la edición' }).click();
+  await p.getByRole('button', { name: 'Guardar cambios', exact: true }).click();
+  await p.getByText('Cambios guardados en Directus.', { exact: true }).waitFor();
+  document = await api(`/revista-studio/document/${id}`); assert.equal(document.edition.paginas.length, 5); assert.equal(document.edition.paginas.filter(row => row.estado === 'archived').length, 1);
+  assert.deepEqual(errors, []);
+  console.log('PASS: create a day, edit text, add/reorder a page, edit figures, select media, save, reload, publish and withdraw without deleting content.');
+} finally {
+  await browser.close();
+  if (id) { const pages = await api(`/items/paginas?filter[edicion][_eq]=${id}&fields=id`); for (const page of pages) await api(`/items/paginas/${page.id}`, undefined, 'DELETE'); await api(`/items/ediciones/${id}`, undefined, 'DELETE'); console.log('Isolated browser-test edition removed.'); }
+  if (uploadedFile) await api(`/files/${uploadedFile}`, undefined, 'DELETE');
+}

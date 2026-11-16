@@ -8,7 +8,8 @@ let css = await readFile('dist/assets/reader.css', 'utf8');
 // Resolve every font referenced by the shared reader CSS.
 const matches = [...css.matchAll(/\/fonts\/([\w.-]+\.woff2)/g)];
 for (const [, file] of matches) css = css.replaceAll(`/fonts/${file}`, `data:font/woff2;base64,${(await readFile(`../../public/fonts/${file}`)).toString('base64')}`);
-await writeFile('dist/assets/reader.css', css);
-await copyFile('preview/poster.js', 'dist/assets/poster.js');
-await writeFile('dist/assets/poster.css', [...css.matchAll(/@font-face\{[^}]+\}/g)].map(match => match[0]).join('\n') + '\n' + await readFile('preview/poster.css', 'utf8'));
+const editingCss = await readFile('preview/editing.css', 'utf8');
+await writeFile('dist/assets/reader.css', css + '\n' + editingCss);
+await build({ entryPoints: ['preview/poster.js'], bundle: true, minify: true, format: 'iife', target: 'es2022', outfile: 'dist/assets/poster.js' });
+await writeFile('dist/assets/poster.css', [...css.matchAll(/@font-face\{[^}]+\}/g)].map(match => match[0]).join('\n') + '\n' + await readFile('preview/poster.css', 'utf8') + '\n' + editingCss);
 console.log('Reader, poster and licensed fonts packaged.');

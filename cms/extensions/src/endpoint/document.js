@@ -8,7 +8,7 @@ const json = value => JSON.stringify(value).replace(/</g, '\\u003c');
 const image = (url, className = '') => url ? `<img class="${className}" src="${esc(url)}" alt="">` : '';
 const fit = (text, className = '', min = 19) => `<div class="${className}" data-fit data-min="${min}">${esc(text)}</div>`;
 
-function poster(edition, raw) {
+function poster(edition, raw, baseUrl) {
   const chapters = edition.chapters;
   const story = chapters.find(page => page.id !== 'portada' && (page.layout === 'story' || (!page.entries && !page.quote && !page.song))) || chapters[1] || chapters[0];
   const facts = chapters.find(page => page.stats?.length) || chapters.find(page => page.entries?.length);
@@ -16,7 +16,7 @@ function poster(edition, raw) {
   const quote = chapters.find(page => page.quote);
   const song = chapters.find(page => page.song)?.song;
   const style = Object.entries(themeStyle(resolveTheme(edition.theme))).map(([key, value]) => `${key}:${value}`).join(';');
-  const asset = raw.instagram_foto ? new URL(`/assets/${encodeURIComponent(raw.instagram_foto)}`, edition.image || edition.photograph).href : edition.photograph;
+  const asset = raw.instagram_foto ? `${baseUrl}/assets/${encodeURIComponent(raw.instagram_foto)}` : edition.photograph;
   const signature = `<span class="p-signature">JerryMC</span>`;
   return `<article class="poster" style="${esc(style)}" data-gold="${edition.theme.titulos_dorados}">
     <header class="p-header"><time>${esc(edition.dateLabel.replace(/ de \d{4}$/, ''))}</time><div><strong>Lo importante de hoy</strong><em>Hechos y personajes importantes · Música que conecta · Palabras que inspiran</em></div><div class="p-brand"><span class="p-prism"><i></i></span>${signature}</div></header>
@@ -28,11 +28,11 @@ function poster(edition, raw) {
   </article>`;
 }
 
-export function makeDocument(raw, appearance, baseUrl, format, page = '') {
+export function makeDocument(raw, appearance, baseUrl, format, page = '', options = {}) {
   const edition = normalizeEdition(raw, baseUrl, resolveTheme(appearance), true);
   if (!edition.chapters.length) throw new StudioValidationError('Añade al menos una página a esta edición.');
   if (page && !edition.chapters.some(chapter => chapter.id === page)) throw new StudioValidationError('La página seleccionada ya no existe. Actualiza la vista previa.');
   const assets = `${baseUrl}/revista-studio/assets`;
   const isPoster = format === 'instagram';
-  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(edition.title)} · ${esc(format)}</title><link rel="stylesheet" href="${assets}/${isPoster ? 'poster' : 'reader'}.css?v=${assetVersion}"></head><body>${isPoster ? poster(edition, raw) : '<div id="root"></div>'}<script type="application/json" id="studio-data">${json({ edition, page })}</script><script src="${assets}/${isPoster ? 'poster' : 'reader'}.js?v=${assetVersion}" defer></script></body></html>`;
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(edition.title)} · ${esc(format)}</title><link rel="stylesheet" href="${assets}/${isPoster ? 'poster' : 'reader'}.css?v=${assetVersion}"></head><body>${isPoster ? poster(edition, raw, baseUrl) : '<div id="root"></div>'}<script type="application/json" id="studio-data">${json({ edition, page, editing: options.editing === true })}</script><script src="${assets}/${isPoster ? 'poster' : 'reader'}.js?v=${assetVersion}" defer></script></body></html>`;
 }
