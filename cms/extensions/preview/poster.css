@@ -2,3 +2,4 @@
 .p-album{font-size:21px;line-height:1.08;height:38px}
 /* Keep long headlines and intrinsic image widths inside the editorial column. */
 .p-hero-copy{grid-template-columns:minmax(0,1fr)}.p-title-block{min-width:0;max-width:100%;overflow:hidden}.p-biography{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}.p-biography img{min-width:0;max-width:100%}
+.p-deck{line-height:1}

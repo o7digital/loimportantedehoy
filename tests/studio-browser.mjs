@@ -46,7 +46,8 @@ try {
   assert.ok((await selector.locator('option').count()) >= 3);
   assert.ok(await page.getByRole('link', { name: 'Editar edición' }).isVisible());
   await page.screenshot({ path: '/tmp/revista-studio-final.png', fullPage: true });
-  for (const [format, width, height] of [['Instagram', 1080, 1350], ['Desktop', 1440, 1000], ['Mobile', 780, 1688]]) {
+  const exportFormats = process.env.STUDIO_LAYOUT_ONLY === '1' ? [] : [['Instagram', 1080, 1350], ['Desktop', 1440, 1000], ['Mobile', 780, 1688]];
+  for (const [format, width, height] of exportFormats) {
     if (format !== 'Instagram') {
       await refresh(() => page.getByRole('button', { name: new RegExp(`^${format}`) }).click());
       if (await page.locator('.page-select select').inputValue() !== 'portada') await refresh(() => page.locator('.page-select select').selectOption('portada'));
@@ -76,5 +77,5 @@ try {
     assert.deepEqual(overflow, [], title);
   }
   assert.deepEqual(errors, []);
-  console.log('PASS: edition switching, interactive page turning, page selection and no browser errors.');
+  console.log(process.env.STUDIO_LAYOUT_ONLY === '1' ? 'PASS: three Instagram layouts, long headlines, edition switching and no browser errors.' : 'PASS: edition switching, interactive page turning, page selection and no browser errors.');
 } finally { await browser.close(); }
