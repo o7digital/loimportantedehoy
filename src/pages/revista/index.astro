@@ -10,6 +10,6 @@ catch (error) { failed = true; console.error("Magazine CMS unavailable:", error 
 if (!edition) Astro.response.status = failed ? 503 : 404;
 Astro.response.headers.set("Cache-Control", edition ? "public, max-age=0, s-maxage=30, stale-while-revalidate=60" : "no-store");
 ---
-<BaseLayout title={edition ? `${edition.title} · ${edition.dateLabel} | Lo importante de hoy` : "La revista | Lo importante de hoy"} description={edition?.subtitle} canonical={edition ? editionPath(edition) : "/revista"} image={edition?.photograph}>
+<BaseLayout title={edition ? `${edition.title} · ${edition.dateLabel} | Lo importante de hoy` : "La revista | Lo importante de hoy"} description={edition?.subtitle} canonical={edition ? editionPath(edition) : "/revista"} image={edition?.image} themeColor={edition?.theme?.color_fondo || "#091A38"}>
   {edition ? <MagazineReader edition={edition} editions={editions} client:load /> : <MagazineUnavailable failed={failed} />}
 </BaseLayout>

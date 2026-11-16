@@ -8,6 +8,24 @@ Les identifiants administrateur sont dans `~/.config/loimportantedehoy/directus-
 
 Au premier accès, Directus propose un formulaire de propriétaire et de licence, à compléter par le responsable du projet. Le bouton « Remind Later » permet de poursuivre la rédaction. Aucun propriétaire ni consentement n'a été enregistré à sa place.
 
+## Couleurs et mise en forme
+
+Ouvrir **Identidad visual** dans Directus pour régler la revue entière : fond de page et des encadrés, texte principal et secondaire, titres, accents turquoise et séparateurs. Les sélecteurs proposent les couleurs du visuel client et acceptent aussi un code hexadécimal. Choisir ensuite les polices des titres et du texte, la taille de lecture (16 à 24 pixels) et l'effet de dégradé sur les titres et chiffres.
+
+La charte initiale reprend le bleu nuit `#091A38`, l'or `#F3CC57`, l'ivoire `#F7F1DF` et le turquoise `#42E2C3` du visuel fourni. **Enregistrer** suffit : les changements s'appliquent au lecteur, sans déploiement, après renouvellement du cache (30 secondes).
+
+Pour une palette propre à une journée, ouvrir l'édition puis **Estilo de esta edición · Opcional**. Les champs laissés vides héritent de la charte générale. Effacer une couleur rétablit cet héritage. Le champ **Ilustración de portada · PNG transparente** permet de placer le personnage sur le fond de la revue, tout en conservant les photos des pages intérieures.
+
+L'illustration de Frida reprend le personnage du fichier client, détouré avec le skill imagegen. Le fichier de couverture est `public/editorial/frida-client-cutout.png` ; sa provenance et les instructions exactes sont dans le fichier `.txt` voisin. Le visuel original reste disponible dans l'édition.
+
+Mise à jour du modèle d'une installation existante :
+
+```sh
+node --env-file="$HOME/.config/loimportantedehoy/directus-admin.env" cms/theme.mjs --upload-frida-cutout
+```
+
+Cette migration ajoute les champs manquants et la charte initiale, sans écraser des couleurs déjà enregistrées. Elle est également appelée par `bootstrap.mjs`.
+
 ## Publier une journée
 
 1. Ouvrir **Ediciones del día** et créer une édition en brouillon.

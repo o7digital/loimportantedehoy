@@ -68,3 +68,4 @@ for (const edition of magazines) {
 console.log("Directus ready. Admin credentials remain in the private environment file.");
 const teamPages = await api("/items/paginas?filter[slug][_eq]=equipo&filter[edicion][slug][_eq]=frida&fields=id,foto_credito");
 for (const page of teamPages) if (!page.foto_credito) await api(`/items/paginas/${page.id}`, { method: "PATCH", body: { foto_credito: "Secretaría de Marina / Gobierno de México", foto_fuente: "https://www.gob.mx/semar/galerias/develacion-de-la-escultura-de-frida-elemento-canino-de-busqueda-y-rescate" } });
+await import("./theme.mjs");

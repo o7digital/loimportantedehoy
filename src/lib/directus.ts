@@ -1,4 +1,5 @@
 import { magazines as sampleEditions, type Magazine, type MagazineChapter } from "../data/magazines";
+import { resolveTheme, type MagazineTheme } from "./magazine-theme";
 
 type CMSPage = {
   id: number; slug: string; estado: string; orden: number; etiqueta: string; antetitulo: string;
@@ -7,13 +8,14 @@ type CMSPage = {
   cancion_titulo?: string; cancion_artista?: string; cancion_album?: string; cancion_nota?: string; cancion_url?: string;
   foto?: string | null; foto_credito?: string; foto_fuente?: string; tipo?: MagazineChapter["layout"];
 };
-type CMSEdition = {
+type CMSEdition = Partial<MagazineTheme> & {
   id: number; slug: string; estado: string; fecha: string; titulo: string; subtitulo: string;
   aniversario: string; categoria: string; portada: string; foto: string; foto_credito?: string;
-  foto_fuente?: string; foto_posicion?: string; fuentes?: string[]; paginas?: CMSPage[];
+  foto_fuente?: string; foto_posicion?: string; fuentes?: string[]; paginas?: CMSPage[]; imagen_recortada?: string;
 };
 
-const editionFields = "id,slug,estado,fecha,titulo,subtitulo,aniversario,categoria,portada,foto,foto_credito,foto_fuente,foto_posicion,fuentes";
+const appearanceFields = "color_fondo,color_superficie,color_texto,color_secundario,color_titulos,color_acento,color_lineas,fuente_titulos,fuente_texto,tamano_texto,titulos_dorados";
+const editionFields = `id,slug,estado,fecha,titulo,subtitulo,aniversario,categoria,portada,foto,foto_credito,foto_fuente,foto_posicion,fuentes,imagen_recortada,${appearanceFields}`;
 const cmsUrl = () => (import.meta.env.DIRECTUS_URL || process.env.DIRECTUS_URL || "").replace(/\/$/, "");
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(new Date());
 const published = () => ({ _and: [{ estado: { _eq: "published" } }, { fecha: { _lte: today() } }] });
@@ -32,11 +34,20 @@ async function request<T>(collection: string, params: Record<string, string>): P
   return payload.data;
 }
 
-function normalize(item: CMSEdition): Magazine {
+async function getAppearance(): Promise<MagazineTheme> {
+  if (!cmsUrl()) return resolveTheme();
+  const response = await fetch(`${cmsUrl()}/items/apariencia?fields=${appearanceFields}`, { signal: AbortSignal.timeout(10000) });
+  if (!response.ok) throw new Error(`Directus apariencia: HTTP ${response.status}`);
+  const { data } = await response.json();
+  return resolveTheme(data || {});
+}
+
+function normalize(item: CMSEdition, theme = resolveTheme()): Magazine {
   const date = item.fecha.slice(0, 10);
   return {
     slug: item.slug, date, dateLabel: new Intl.DateTimeFormat("es-MX", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${date}T12:00:00Z`)),
     title: item.titulo, subtitle: item.subtitulo, anniversary: item.aniversario || "", category: item.categoria,
+    theme: resolveTheme(theme, item), coverCutout: asset(item.imagen_recortada) || undefined,
     image: asset(item.portada), photograph: asset(item.foto), photoCredit: item.foto_credito || "", photoSource: item.foto_fuente || "", photoPosition: item.foto_posicion || "50% 50%",
     sources: Array.isArray(item.fuentes) ? item.fuentes : [],
     chapters: (item.paginas || []).filter(page => page.estado === "published").sort((a, b) => a.orden - b.orden).map(page => ({
@@ -55,7 +66,7 @@ export async function getEditions(): Promise<Magazine[]> {
     return sampleEditions;
   }
   const items = await request<CMSEdition>("ediciones", { fields: editionFields, sort: "-fecha", limit: "100", filter: JSON.stringify(published()) });
-  return items.map(normalize);
+  return items.map(item => normalize(item));
 }
 
 export async function getEdition(key?: string): Promise<Magazine | undefined> {
@@ -66,9 +77,10 @@ export async function getEdition(key?: string): Promise<Magazine | undefined> {
   const dateKey = key && /^\d{4}-\d{2}-\d{2}$/.test(key) && !Number.isNaN(Date.parse(key)) && new Date(key).toISOString().slice(0, 10) === key;
   const keyFilter = key ? { _or: [{ slug: { _eq: key } }, ...(dateKey ? [{ fecha: { _eq: key } }] : [])] } : {};
   const filter = { _and: [published(), keyFilter] };
-  const [item] = await request<CMSEdition>("ediciones", { fields: `${editionFields},paginas.*`, sort: "-fecha", limit: "1", filter: JSON.stringify(filter), "deep[paginas][_sort]": "orden", "deep[paginas][_filter][estado][_eq]": "published" });
+  const [items, theme] = await Promise.all([request<CMSEdition>("ediciones", { fields: `${editionFields},paginas.*`, sort: "-fecha", limit: "1", filter: JSON.stringify(filter), "deep[paginas][_sort]": "orden", "deep[paginas][_filter][estado][_eq]": "published" }), getAppearance()]);
+  const [item] = items;
   if (!item) return undefined;
-  const edition = normalize(item);
+  const edition = normalize(item, theme);
   if (!edition.chapters.length || edition.chapters[0].id !== "portada") throw new Error("The edition needs a published cover page");
   return edition;
 }

@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import type { Magazine, MagazineChapter } from "../data/magazines";
 import "../styles/magazine.css";
+import { resolveTheme, themeStyle } from "../lib/magazine-theme";
 
 const number = (value: number) => String(value).padStart(2, "0");
 const path = (edition: Magazine) => `/revista/${edition.date}`;
 function Arrow({ back = false }: { back?: boolean }) {
   return <svg viewBox="0 0 32 24" fill="none" aria-hidden="true"><path d={back ? "M29 12H3m9-9-9 9 9 9" : "M3 12h26m-9-9 9 9-9 9"} stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
-function Photograph({ edition, chapter }: { edition: Magazine; chapter?: MagazineChapter }) {
-  const credit = chapter?.photoCredit || edition.photoCredit;
-  const source = chapter?.photoSource || edition.photoSource;
-  return <figure className="journal-photograph"><img src={chapter?.image || edition.photograph || edition.image} alt={edition.title} style={{ objectPosition: edition.photoPosition || "50% 50%" }} loading={chapter ? "lazy" : "eager"} fetchPriority={chapter ? "auto" : "high"} /><figcaption>{credit}{source && <> · <a href={source} target="_blank" rel="noreferrer">Fuente ↗</a></>}</figcaption></figure>;
+function Photograph({ edition, chapter, cover = false }: { edition: Magazine; chapter?: MagazineChapter; cover?: boolean }) {
+  const cutout = cover && edition.coverCutout;
+  const credit = cutout ? "Ilustración de JerryMC" : chapter?.photoCredit || edition.photoCredit;
+  const source = cutout ? edition.image : chapter?.photoSource || edition.photoSource;
+  return <figure className={`journal-photograph${cutout ? " journal-cutout" : ""}`}><img src={cutout || chapter?.image || edition.photograph || edition.image} alt={cutout ? `${edition.title} · Ilustración de la edición original` : edition.title} style={{ objectPosition: edition.photoPosition || "50% 50%" }} loading={chapter ? "lazy" : "eager"} fetchPriority={chapter ? "auto" : "high"} /><figcaption>{credit}{source && <> · <a href={source} target="_blank" rel="noreferrer">Fuente ↗</a></>}</figcaption></figure>;
 }
 function MusicPlayer({ chapter }: { chapter: MagazineChapter }) {
   const [playing, setPlaying] = useState(false);
@@ -23,7 +25,7 @@ function EditionPage({ chapter, edition, index, nextEdition }: { chapter: Magazi
   const layout = chapter.layout || (chapter.song ? "music" : chapter.quote ? "quote" : chapter.stats || chapter.entries ? "facts" : "story");
   if (index === 0) return <div className="journal-page-inner journal-cover-layout">
     <div className="journal-cover-copy"><p className="journal-eyebrow"><span />{edition.category}</p><span className="journal-cover-anniversary">{edition.anniversary}</span><h1>{edition.title}<span>.</span></h1><p className="journal-cover-deck">{edition.subtitle}</p><div className="journal-cover-rule" /><p className="journal-cover-intro">{edition.chapters.find(page => page.intro)?.intro}</p><div className="journal-byline"><span>POR JERRYMC</span><span>{edition.chapters.length} páginas · Una historia para llevar contigo</span></div></div>
-    <div className="journal-cover-visual"><Photograph edition={edition} /><span className="journal-photo-label">LA HISTORIA<br />DE ESTE DÍA</span><span className="journal-cover-date">{edition.date.slice(8)}<small>{new Intl.DateTimeFormat("es", { month: "short", timeZone: "UTC" }).format(new Date(`${edition.date}T12:00:00Z`)).toUpperCase()}</small></span></div>
+    <div className={`journal-cover-visual${edition.coverCutout ? " journal-cover-illustration" : ""}`}><Photograph edition={edition} cover /><span className="journal-photo-label">LA HISTORIA<br />DE ESTE DÍA</span><span className="journal-cover-date">{edition.date.slice(8)}<small>{new Intl.DateTimeFormat("es", { month: "short", timeZone: "UTC" }).format(new Date(`${edition.date}T12:00:00Z`)).toUpperCase()}</small></span></div>
     <div className="journal-cover-bottom"><p>Hechos que importan.<br /><em>Historias que se quedan.</em></p><span>DESLIZA PARA COMENZAR <Arrow /></span></div>
   </div>;
   if (layout === "music" && chapter.song) return <div className="journal-page-inner journal-music-layout">
@@ -36,6 +38,7 @@ function EditionPage({ chapter, edition, index, nextEdition }: { chapter: Magazi
 }
 
 export default function MagazineReader({ edition, editions }: { edition: Magazine; editions: Magazine[] }) {
+  const theme = resolveTheme(edition.theme);
   const [current, setCurrent] = useState(0);
   const [ready, setReady] = useState(false);
   const [sheet, setSheet] = useState<"index" | "editions" | null>(null);
@@ -75,9 +78,9 @@ export default function MagazineReader({ edition, editions }: { edition: Magazin
     };
     window.addEventListener("keydown", handle); return () => window.removeEventListener("keydown", handle);
   }, [current, sheet, edition.date]);
-  return <main className={`journal journal-issue-${edition.slug}${edition.title.length > 10 ? " journal-long-title" : ""}`}>
+  return <main className={`journal journal-issue-${edition.slug}${edition.title.length > 10 ? " journal-long-title" : ""}`} style={themeStyle(theme)} data-gold-headings={theme.titulos_dorados}>
     <div className="journal-utility"><a href="/" aria-label="Volver a la landing">← El proyecto</a><span>UNA REVISTA DE JERRYMC</span><button type="button" onClick={() => setSheet("editions")} aria-haspopup="dialog">Otras ediciones <span aria-hidden="true">↗</span></button></div>
-    <header className="journal-masthead"><a className="journal-wordmark" href="/revista">Lo importante <em>de hoy</em><span className="journal-red-dot" /></a><div className="journal-masthead-note">Hechos y personajes importantes.<br />Música que conecta. Palabras que inspiran.</div></header>
+    <header className="journal-masthead"><div className="journal-masthead-brand"><a className="journal-wordmark" href="/revista">Lo importante <em>de hoy</em></a><p className="journal-client-tagline">Hechos y personajes importantes · Música que conecta · Palabras que inspiran</p></div><div className="journal-client-mark" aria-label="Una revista de JerryMC"><span className="prism" aria-hidden="true"><span className="prism-beam" /></span><span>JerryMC</span></div></header>
     <div className="journal-date-line"><span><span className="journal-today-dot" />{weekday.charAt(0).toUpperCase() + weekday.slice(1)}, <time dateTime={edition.date}>{edition.dateLabel}</time></span><span className="journal-date-caption">UNA HISTORIA. UNA CANCIÓN. UNA PAUSA.</span><button type="button" onClick={() => setSheet("index")} aria-haspopup="dialog"><span aria-hidden="true">☰</span> En esta edición</button></div>
     <nav className="journal-tabs" aria-label="Secciones de la revista" ref={tabs}>{edition.chapters.map((chapter, index) => <a key={chapter.id} href={`#${chapter.id}`} aria-current={index === current ? "step" : undefined} onClick={event => { event.preventDefault(); goTo(index); }}><span>{number(index)}</span>{chapter.label}</a>)}</nav>
     <div className="journal-track" ref={track} tabIndex={0} aria-label="Páginas de la revista. Desliza o usa las flechas para pasar de página." onScroll={() => { const container = track.current; if (container) { const index = Math.max(0, Math.min(edition.chapters.length - 1, Math.round(container.scrollLeft / container.clientWidth))); active.current = index; setCurrent(index); } }}>{edition.chapters.map((chapter, index) => <article id={chapter.id} key={chapter.id} className={`journal-page${chapter.quote && (!chapter.layout || chapter.layout === "quote") ? " journal-page-dark" : ""}`} data-current={current === index} aria-label={`${index + 1} de ${edition.chapters.length}: ${chapter.label}`} aria-hidden={ready && current !== index ? true : undefined} inert={ready && current !== index ? true : undefined}><EditionPage chapter={chapter} edition={edition} index={index} nextEdition={nextEdition} /></article>)}</div>

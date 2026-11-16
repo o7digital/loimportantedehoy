@@ -1,0 +1,19 @@
+Asset: frida-client-cutout.png
+Source: Client-provided WhatsApp Image 2026-11-15 at 11.19.30.jpeg
+Tool: built-in image_gen; transparent_background=true
+Use case: background-extraction
+Process: AI-assisted faithful extraction of the client's large seated Frida illustration, followed by one edge-cleanup pass. No programmatic image edits performed. Original source and generated originals preserved.
+Credit: Client-supplied Lo importante de hoy / JerryMC illustration; cutout prepared with image_gen.
+Limitation: AI-assisted extraction, not a pixel-identical manual mask. Minor colored antialiasing can remain around a few fur edges.
+
+Initial prompt:
+Use case: background-extraction.
+Asset type: transparent PNG cutout for the cover of the client's digital magazine.
+Input image: the supplied original magazine poster is the edit target. Extract ONLY the LARGE SEATED FRIDA DOG illustration on the upper-right side (not the small action photograph on the left).
+Primary request: create a clean cutout of that exact large seated dog illustration, with real transparent alpha around it. Preserve the original dog's identity, face, proportions, seated pose, gaze to the right, golden tan fur, hanging ears, clear tan goggles above and around the eyes, tan rescue harness with dark straps, all four blue protective boots, and the small dark rock/rubble base beneath her paws as closely as possible.
+Composition/framing: a complete full-body seated dog, both ears, goggles, tail/haunch, boots and a minimal neutral dark rock base fully visible with comfortable transparent padding; no clipped anatomy.
+Constraints: faithful extraction, not a redesign. Do not create a different dog, do not change its pose, facial expression, lighting, equipment, colors, or illustrative rendering style. Remove every bit of poster text, headings, logos, symbols, decorative rules, other photos, and navy poster background. No new text. No glow, no opaque rectangular backdrop, no new scenery. Actual transparency outside the preserved subject and minimal rock base.
+
+Cleanup prompt:
+Use case: background-extraction. Edit target: supplied transparent cutout of Frida. Keep the entire dog, fur detail, face, seated pose, goggles, harness, all blue boots, rock base, framing, colors, lighting, and identity exactly unchanged. Make ONLY this correction: remove the unwanted bright red, yellow, white and blue contamination/fringe pixels just outside and along the fur/equipment silhouette; replace that contamination with clean soft alpha transparency. The original dog body, natural fur edge colors and dark neutral rock base must remain untouched. Do not redraw or redesign the dog. No text, no logos, no backdrop, no opaque color fill. Preserve real transparent alpha everywhere outside the clean cutout. Return the same full-body portrait cutout, all anatomy and equipment fully visible.
+

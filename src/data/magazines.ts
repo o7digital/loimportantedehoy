@@ -1,3 +1,5 @@
+import type { MagazineTheme } from "../lib/magazine-theme";
+
 export type MagazineChapter = {
   id: string;
   label: string;
@@ -28,6 +30,8 @@ export type Magazine = {
   photoCredit?: string;
   photoSource?: string;
   photoPosition?: string;
+  theme?: MagazineTheme;
+  coverCutout?: string;
   category: string;
   sources: string[];
   chapters: MagazineChapter[];

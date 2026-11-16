@@ -1,8 +1,8 @@
 ---
 import "../styles/global.css";
 import { site } from "../config/site";
-interface Props { title?: string; description?: string; image?: string; canonical?: string; type?: "website" | "article"; jsonLd?: Record<string, unknown> | Record<string, unknown>[]; }
-const { title = `${site.name} | Revista de cultura, historia y música`, description = site.description, image, canonical = Astro.url.pathname, type = "website", jsonLd } = Astro.props;
+interface Props { title?: string; description?: string; image?: string; canonical?: string; type?: "website" | "article"; jsonLd?: Record<string, unknown> | Record<string, unknown>[]; themeColor?: string; }
+const { title = `${site.name} | Revista de cultura, historia y música`, description = site.description, image, canonical = Astro.url.pathname, type = "website", jsonLd, themeColor = "#0a0a09" } = Astro.props;
 const canonicalUrl = new URL(canonical, site.url).toString();
 const imageUrl = image ? new URL(image, site.url).toString() : undefined;
 const organization = { "@context": "https://schema.org", "@type": "Organization", name: site.name, url: site.url, sameAs: [site.instagram] };
@@ -13,7 +13,7 @@ const organization = { "@context": "https://schema.org", "@type": "Organization"
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#0a0a09" />
+    <meta name="theme-color" content={themeColor} />
     <link rel="canonical" href={canonicalUrl} />
     <meta property="og:type" content={type} /><meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} /><meta property="og:description" content={description} />
