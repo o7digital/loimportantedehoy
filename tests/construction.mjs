@@ -22,7 +22,7 @@ try {
     await page.setViewportSize({ width, height });
     const response = await page.goto(base + "/", { waitUntil: "domcontentloaded" });
     assert.equal(response.status(), 503);
-    assert.ok(await page.getByRole("heading", { level: 1 }).isVisible());
+    await page.getByRole("heading", { level: 1 }).waitFor({ state: "visible" });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
     assert.equal(await page.locator("meta[name=robots]").getAttribute("content"), "noindex,nofollow,noarchive");
     await page.screenshot({ path: `/tmp/loimportante-construction-${width}.png`, fullPage: true });
