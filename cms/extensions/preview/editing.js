@@ -37,6 +37,18 @@ export function initEditing(snapshot) {
   if (facts) { mark('.p-stats', 'page', 'cifras', facts.id); mark('.p-entry-block', 'page', 'entradas', facts.id); }
   if (details) mark('.p-details-entries', 'page', 'entradas', details.id);
   if (quote) mark('.p-quote-text', 'page', 'cita', quote.id);
+  const track = document.querySelector('.journal-track');
+  if (track) {
+    let lastPage = '';
+    const reportPage = () => {
+      const current = track.querySelector('.journal-page[data-current=true]');
+      if (!current || current.id === lastPage) return;
+      lastPage = current.id;
+      window.parent.postMessage({ type: 'revista-page', page: current.id }, '*');
+    };
+    new MutationObserver(reportPage).observe(track, { subtree: true, attributes: true, attributeFilter: ['data-current'] });
+    reportPage();
+  }
   document.addEventListener('click', event => {
     const element = event.target.closest?.('[data-studio-field]');
     if (!element) return;

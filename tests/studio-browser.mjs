@@ -66,8 +66,24 @@ try {
       const button = page.getByRole('button', { name: format, exact: true });
       if (await button.getAttribute('aria-pressed') !== 'true') await refresh(() => button.click());
       else await ready();
+      let expectedPage;
+      if (format !== 'Instagram') {
+        const next = await page.locator('.ed-artboard iframe').evaluate(frame => {
+          const doc = frame.contentDocument; const snapshot = JSON.parse(doc.getElementById('studio-data').textContent);
+          const current = doc.querySelector('.journal-page[data-current=true]').id;
+          return snapshot.edition.chapters[snapshot.edition.chapters.findIndex(page => page.id === current) + 1];
+        });
+        await preview().getByRole('button', { name: 'Página siguiente', exact: true }).click();
+        await page.waitForFunction(slug => document.querySelector('.ed-artboard iframe').contentDocument.querySelector('.journal-page[data-current=true]')?.id === slug, next.id);
+        await page.waitForFunction(label => document.querySelector('.ed-preview-caption').textContent.includes(label), next.label);
+        expectedPage = next.id;
+      }
+      const exportRequest = page.waitForRequest(request => request.url().includes('/revista-studio/export/') && request.method() === 'POST');
       const downloaded = page.waitForEvent('download');
-      await page.locator('.ed-export-button').click(); const download = await downloaded;
+      await page.locator('.ed-export-button').click();
+      if (expectedPage) assert.equal((await exportRequest).postDataJSON().page, expectedPage);
+      else await exportRequest;
+      const download = await downloaded;
       assert.equal(await download.failure(), null); const png = await readFile(await download.path());
       assert.equal(png.readUInt32BE(16), width); assert.equal(png.readUInt32BE(20), height);
       console.log(`PASS: unsaved ${format} export ${width}×${height}.`);

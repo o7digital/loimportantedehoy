@@ -21,7 +21,7 @@ const discardDialog = ref(); const newDialog = ref(); const addDialog = ref(); c
 const mediaError = ref(''); const mediaRows = ref([]); const mediaSearch = ref(''); const mediaBusy = ref(false); const mediaTarget = ref(null); const uploadInput = ref();
 const newTitle = ref(''); const newDate = ref(today()); const creating = ref(false); const newError = ref('');
 const newType = ref('story'); const pending = ref(null); const highlighted = ref('');
-let loadCounter = 0; let observer; let previewTimer; let previewCounter = 0; let mediaTimer; let mediaCounter = 0; let selectionTimer;
+let pageFromPreview = false; let loadCounter = 0; let observer; let previewTimer; let previewCounter = 0; let mediaTimer; let mediaCounter = 0; let selectionTimer;
 const formats = { desktop: { label: 'Desktop', icon: 'monitor', width: 1440, height: 1000, note: '1440 × 1000' }, mobile: { label: 'Mobile', icon: 'phone', width: 390, height: 844, note: '390 × 844 · PNG a 2×' }, instagram: { label: 'Instagram', icon: 'instagram', width: 1080, height: 1350, note: '1080 × 1350 · 4:5' } };
 const size = computed(() => formats[format.value]);
 const expandedHtml = computed(() => html.value.replace('"editing":true', '"editing":false'));
@@ -157,7 +157,13 @@ async function upload(event) {
   finally { mediaBusy.value = false; event.target.value = ''; }
 }
 async function selectFromPreview(event) {
-  if (event.source !== frame.value?.contentWindow || event.data?.type !== 'revista-select') return;
+  if (event.source !== frame.value?.contentWindow) return;
+  if (event.data?.type === 'revista-page') {
+    const page = activePages.value.find(page => page.slug === event.data.page);
+    if (page && page.slug !== activeSlug.value) { pageFromPreview = true; activeSlug.value = page.slug; }
+    return;
+  }
+  if (event.data?.type !== 'revista-select') return;
   const data = event.data;
   if (data.target === 'page') { const page = activePages.value.find(page => page.slug === data.page); if (!page) return; chooseSection('pages', page); if (data.field === 'foto') { await openMedia('page', 'foto', page); return; } }
   else if (data.target === 'edition') { chooseSection('edition'); if (['foto', 'imagen_recortada'].includes(data.field)) { await openMedia('edition', data.field); return; } }
@@ -184,7 +190,7 @@ onMounted(async () => {
   finally { busy.value = false; schedulePreview(true); }
 });
 watch(draft, () => schedulePreview(), { deep: true });
-watch([format, activeSlug], () => { zoom.value = 'fit'; schedulePreview(true); });
+watch([format, activeSlug], () => { if (pageFromPreview) { pageFromPreview = false; return; } zoom.value = 'fit'; schedulePreview(true); });
 watch(canvas, element => { observer?.disconnect(); if (element) observer?.observe(element); }, { flush: 'post' });
 watch(zoom, resize);
 watch(mediaSearch, () => { clearTimeout(mediaTimer); mediaTimer = setTimeout(loadMedia, 300); });
@@ -277,7 +283,7 @@ onBeforeUnmount(() => { observer?.disconnect(); clearTimeout(previewTimer); clea
 
             <section class="ed-preview-panel">
               <header class="ed-preview-toolbar"><div class="ed-format-switch" role="group" aria-label="Formato de vista previa"><button v-for="(item, key) in formats" :key="key" type="button" :aria-pressed="format === key" @click="format = key"><Icon :name="item.icon" /><span>{{ item.label }}</span></button></div><div class="ed-preview-actions"><button type="button" class="ed-icon-button" aria-label="Actualizar vista previa" @click="schedulePreview(true)"><Icon name="refresh" /></button><button type="button" class="ed-icon-button" aria-label="Ampliar vista previa" @click="expandedDialog.showModal()"><Icon name="expand" /></button></div></header>
-              <div class="ed-preview-caption"><span><i :class="{ updating: composing }" />{{ composing ? 'Componiendo tu revista…' : 'Vista en vivo' }}</span><small>{{ format === 'instagram' ? 'Haz clic en un texto para editarlo.' : 'Pasa las páginas o haz clic para editar.' }}</small></div>
+              <div class="ed-preview-caption"><span><i :class="{ updating: composing }" />{{ composing ? 'Componiendo tu revista…' : 'Vista en vivo' }}</span><small>{{ format === 'instagram' ? 'Haz clic en un texto para editarlo.' : `${activePage?.etiqueta || 'Portada'} · Pasa las páginas o haz clic para editar.` }}</small></div>
               <div v-if="previewError" class="ed-preview-error" role="alert"><Icon name="eye" /><p>{{ previewError }}</p></div>
               <div ref="canvas" class="ed-canvas" :class="[`format-${format}`, { composing }]" :aria-busy="composing"><div v-if="html" class="ed-artboard" :style="{ width: `${size.width * scale}px`, height: `${size.height * scale}px` }"><iframe ref="frame" :key="html" :srcdoc="html" @load="previewLoaded" :title="`Vista previa ${size.label}`" :width="size.width" :height="size.height" :style="{ transform: `scale(${scale})` }" /></div><div v-else class="ed-canvas-empty"><Icon name="book" /><span>Tu historia toma forma aquí.</span></div></div>
               <footer class="ed-canvas-footer"><span>{{ size.note }}</span><label><span class="ed-sr-only">Zoom del lienzo</span><select v-model="zoom"><option value="fit">Ajustar</option><option value="50">50%</option><option value="75">75%</option><option value="100">100%</option></select></label><button type="button" class="ed-button ed-export-button" :disabled="generating || !html || saving" @click="generate"><Icon name="upload" /><span>{{ generating ? 'Creando archivo…' : format === 'instagram' ? 'Exportar Instagram' : 'Exportar vista · PNG' }}</span></button></footer>
