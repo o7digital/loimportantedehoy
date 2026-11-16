@@ -54,7 +54,7 @@ test('editor saves whole editions atomically, protects revisions and previews un
     record = await api(`/revista-studio/document/${id}`); draft = createDraft(record.edition);
     draft.estado = 'published'; draft.foto = sources.find(item => item.foto).foto; draft.paginas.forEach(page => { page.estado = 'published'; });
     record = await api(`/revista-studio/document/${id}`, { edition: draft, revision: record.revision }, 'PATCH'); assert.equal(record.edition.estado, 'published');
-    assert.equal((await (await fetch(`${base}/items/ediciones?filter[id][_eq]=${id}`)).json()).data.length, 1);
+    assert.equal((await (await fetch(`${base}/items/ediciones?filter[id][_eq]=${id}`)).json()).data.length, process.env.SITE_UNDER_CONSTRUCTION === 'true' ? 0 : 1);
     // Withdrawal preserves the page and its text; it never deletes content.
     draft = createDraft(record.edition); const archivedId = draft.paginas[4].id; draft.paginas[4].estado = 'archived';
     record = await api(`/revista-studio/document/${id}`, { edition: draft, revision: record.revision }, 'PATCH');

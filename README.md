@@ -2,6 +2,14 @@
 
 Revue éditoriale quotidienne, lecteur à feuilleter et rédaction Directus.
 
+## Site en construction
+
+`SITE_UNDER_CONSTRUCTION=true` sur Vercel construit uniquement la page d'attente, sans importer la revue ni copier ses fichiers publics. Toutes les adresses, y compris les anciennes pages et les images locales, renvoient cette page avec un statut 503, `no-store`, `noindex` et `Retry-After`. Le fichier robots interdit l'exploration. Le studio Directus reste disponible.
+
+Les lectures anonymes des textes Directus sont fermées avec `node --env-file="$HOME/.config/loimportantedehoy/directus-admin.env" cms/visibility.mjs --private`. Le script sauvegarde les règles publiques initiales dans le dossier privé de configuration, sans modifier les éditions ni les droits des rédacteurs. Pour rouvrir, utiliser `--public`, passer la variable Vercel à `false`, puis redéployer. Un import initial lancé pendant cette fermeture doit aussi recevoir `SITE_UNDER_CONSTRUCTION=true`.
+
+Validation : `SITE_UNDER_CONSTRUCTION=true npm run dev`, puis `npm run test:construction`. Pour les contrôles CMS en période de fermeture : `SITE_UNDER_CONSTRUCTION=true npm test`. Les tests du lecteur public s'utilisent après réouverture.
+
 ## Démarrage
 
 ```bash

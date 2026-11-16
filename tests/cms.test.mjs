@@ -5,12 +5,20 @@ import { randomUUID } from "node:crypto";
 const cms = (process.env.DIRECTUS_URL || process.env.PUBLIC_URL || "").replace(/\/$/, "");
 const website = process.env.BASE_URL || "http://127.0.0.1:4321";
 const configured = Boolean(cms);
+const underConstruction = process.env.SITE_UNDER_CONSTRUCTION === "true";
 const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(new Date());
 
-test("public editions are published, dated, ordered and have real media", { skip: !configured }, async () => {
+test(underConstruction ? "construction mode hides all editions and pages from anonymous readers" : "public editions are published, dated, ordered and have real media", { skip: !configured }, async () => {
   const response = await fetch(`${cms}/items/ediciones?fields=id,estado,fecha,foto,paginas.id&sort=-fecha`);
   assert.equal(response.status, 200);
   const { data } = await response.json();
+  if (underConstruction) {
+    assert.deepEqual(data, []);
+    const pages = await fetch(`${cms}/items/paginas?fields=id,titulo,contenido`);
+    assert.equal(pages.status, 200);
+    assert.deepEqual((await pages.json()).data, []);
+    return;
+  }
   assert.ok(data.length > 0);
   for (const edition of data) { assert.equal(edition.estado, "published"); assert.ok(edition.fecha <= today); assert.ok(edition.paginas.length > 1); assert.ok(edition.foto); }
   assert.deepEqual(data.map(item => item.fecha), data.map(item => item.fecha).sort().reverse());
@@ -35,7 +43,7 @@ test("the client palette is persisted in Directus and visitors cannot change it"
   assert.equal(write.status, 403);
 });
 
-test("drafts and future issues stay private; publishing and editing reach SSR without a rebuild", { skip: !configured || process.env.RUN_CMS_WRITE_TESTS !== "1" || !process.env.ADMIN_PASSWORD }, async () => {
+test("drafts and future issues stay private; publishing and editing reach SSR without a rebuild", { skip: !configured || underConstruction || process.env.RUN_CMS_WRITE_TESTS !== "1" || !process.env.ADMIN_PASSWORD }, async () => {
   const response = await fetch(`${cms}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD }) });
   assert.equal(response.status, 200);
   const { data: { access_token: token } } = await response.json();

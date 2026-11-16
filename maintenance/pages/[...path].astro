@@ -1,0 +1,35 @@
+---
+export const prerender = false;
+Astro.response.status = 503;
+Astro.response.headers.set("Cache-Control", "no-store, max-age=0");
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+Astro.response.headers.set("Retry-After", "3600");
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <meta name="theme-color" content="#091A38" />
+    <meta name="description" content="Estamos preparando Lo importante de hoy. Nuestra revista digital estará disponible próximamente." />
+    <title>En construcción · Lo importante de hoy</title>
+  </head>
+  <body>
+    <div class="holding">
+      <header><a href="/" aria-label="Lo importante de hoy"><span class="monogram">li<span>.</span></span><span class="brand">Lo importante<br /><em>de hoy</em></span></a><span class="edition">UNA REVISTA DE JERRYMC</span></header>
+      <main>
+        <div class="copy"><p class="eyebrow"><span></span> EN CONSTRUCCIÓN</p><h1>Estamos preparando<br />algo <em>importante.</em></h1><div class="rule"></div><p class="intro">Una nueva forma de hacer una pausa.<br />Historias, música y palabras para acompañar tu día.</p><p class="soon">PRÓXIMAMENTE <span>—</span> LO IMPORTANTE DE HOY</p></div>
+        <div class="art" aria-hidden="true"><div class="orbit"></div><div class="book"><div class="book-top"><span>UNA HISTORIA.<br />UNA CANCIÓN. UNA PAUSA.</span><span>JERRYMC</span></div><div class="book-title">Lo<br />importante<br /><em>de hoy.</em></div><div class="book-rule"></div><p>Hechos que importan.<br /><em>Historias que se quedan.</em></p><span class="book-corner"></span></div><span class="art-caption">CADA DÍA, UNA NUEVA MIRADA.</span></div>
+      </main>
+      <footer><span>Gracias por acompañarnos.</span><span>LO IMPORTANTE DE HOY <i>©</i> {new Date().getFullYear()}</span><em>Muy pronto.</em></footer>
+    </div>
+  </body>
+</html>
+<style>
+  :global(*){box-sizing:border-box} :global(body){margin:0;color:#F7F1DF;background:#091A38;font-family:Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  :global(body)::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 80% 40%,#183B5B88,transparent 65%);pointer-events:none}
+  .holding{max-width:1440px;min-height:100svh;margin:auto;padding:0 5.5vw;display:flex;flex-direction:column}header{min-height:135px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #C6A34D60;gap:25px}header>a{display:flex;gap:18px;align-items:center;text-decoration:none;color:inherit}.monogram{font:700 76px/.8 Georgia,serif;letter-spacing:-7px}.monogram>span{color:#F3CC57}.brand{font:700 20px/1.05 Georgia,serif}.brand em{font-weight:400;color:#F3CC57}.edition{font-size:9px;letter-spacing:2.4px;color:#C6CCDA}main{flex:1;min-height:565px;display:grid;grid-template-columns:1.3fr 1fr;align-items:center;gap:45px;padding:65px 0 70px}.eyebrow{display:flex;align-items:center;gap:13px;font-size:10px;letter-spacing:2.5px;color:#F3CC57;margin:0 0 35px}.eyebrow>span{width:28px;height:1px;background:#F3CC57}h1{font:400 clamp(46px,5.7vw,78px)/1.06 Georgia,serif;letter-spacing:-2.8px;margin:0}h1 em{color:#F3CC57;display:inline-block}.rule{height:1px;width:70px;background:#C6A34D;margin:32px 0}.intro{font:400 19px/1.8 Georgia,serif;color:#C6CCDA;margin:0}.soon{font-size:8px;letter-spacing:1.7px;margin:40px 0 0;color:#F3CC57}.soon>span{margin:0 12px;color:#C6CCDA}.art{position:relative;min-height:440px;display:flex;align-items:center;justify-content:center;perspective:1200px}.orbit{position:absolute;width:400px;height:400px;border:1px solid #C6A34D19;border-radius:50%;transform:rotateX(10deg)}.orbit::after{content:"";position:absolute;inset:35px;border:1px solid #C6A34D18;border-radius:50%}.book{position:relative;width:270px;height:362px;background:linear-gradient(135deg,#173655,#091A38 75%);border:1px solid #C6A34D80;padding:28px 26px;transform:rotateY(-16deg) rotateZ(6deg);box-shadow:9px 5px 0 -2px #17304E,10px 5px 0 -2px #C6A34D66,16px 10px 0 -3px #102747,17px 10px 0 -3px #C6A34D44,25px 30px 55px #0005}.book-top{display:flex;justify-content:space-between;gap:10px;font-size:5px;line-height:1.7;letter-spacing:1.2px;color:#C6CCDA}.book-top>span:last-child{color:#F3CC57}.book-title{font:700 43px/.98 Georgia,serif;letter-spacing:-1.5px;margin-top:35px;color:#F3CC57}.book-title em{font-weight:400;color:#F7F1DF}.book-rule{height:1px;width:100%;margin-top:26px;background:linear-gradient(90deg,#C6A34D,transparent)}.book>p{font:italic 12px/1.5 Georgia,serif;margin-top:20px;color:#C6CCDA}.book>p em{color:#F7F1DF}.book-corner{position:absolute;right:-1px;bottom:-1px;width:40px;height:40px;background:linear-gradient(135deg,transparent 48%,#9D8148 49%,#F3CC57)}.art-caption{position:absolute;bottom:-4px;font-size:7px;letter-spacing:2px;color:#C6CCDA}footer{min-height:90px;border-top:1px solid #C6A34D60;display:flex;justify-content:space-between;align-items:center;gap:20px;color:#C6CCDA}footer>span:first-child{font:italic 15px Georgia,serif}footer>span:nth-child(2){font-size:7px;letter-spacing:1.8px}footer i{font-style:normal;margin:0 5px}footer>em{font:italic 20px Georgia,serif;color:#F3CC57}
+  @media(max-width:760px){.holding{padding:0 24px}header{min-height:105px}.monogram{font-size:61px}.brand{font-size:17px}.edition{font-size:6px;letter-spacing:1px;max-width:90px;text-align:right;line-height:1.8}main{grid-template-columns:1fr;gap:42px;padding:48px 0;min-height:0}.eyebrow{font-size:8px;letter-spacing:2px;margin-bottom:24px}h1{font-size:clamp(39px,8.8vw,60px);letter-spacing:-1.6px}.rule{margin:24px 0}.intro{font-size:17px;line-height:1.6}.soon{margin-top:28px;font-size:6px;letter-spacing:1.3px}.soon>span{margin:0 7px}.art{min-height:340px}.book{width:220px;height:295px;padding:23px 22px}.book-title{font-size:35px;margin-top:25px}.book-rule{margin-top:21px}.book>p{font-size:10px;margin-top:15px}.orbit{width:300px;height:300px}.book-top{font-size:4px}.art-caption{font-size:6px}footer{min-height:95px;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:22px 0}footer>span:first-child{font-size:13px}footer>span:nth-child(2){order:3;width:100%;font-size:6px;letter-spacing:1.5px}footer>em{font-size:18px}}
+  @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>

@@ -42,7 +42,7 @@ const policies = await api("/policies");
 let publicPolicy = policies.find(policy => policy.name === "Public" || policy.name === "$t:public_label");
 if (!publicPolicy) { publicPolicy = await api("/policies", { method: "POST", body: { name: "Public", app_access: false, admin_access: false } }); await api("/access", { method: "POST", body: { policy: publicPolicy.id, role: null, user: null } }); }
 const permissions = await api(`/permissions?filter[policy][_eq]=${publicPolicy.id}`);
-const visibleEdition = { _and: [{ estado: { _eq: "published" } }, { fecha: { _lte: "$NOW(-6 hours)" } }] };
+const visibleEdition = process.env.SITE_UNDER_CONSTRUCTION === "true" ? { id: { _eq: 0 } } : { _and: [{ estado: { _eq: "published" } }, { fecha: { _lte: "$NOW(-6 hours)" } }] };
 for (const [collection, filter] of [["ediciones", visibleEdition], ["paginas", { _and: [{ estado: { _eq: "published" } }, { edicion: visibleEdition }] }], ["directus_files", {}]]) {
   const existingPermission = permissions.find(permission => permission.collection === collection && permission.action === "read");
   const body = { policy: publicPolicy.id, collection, action: "read", fields: collection === "directus_files" ? ["id", "filename_download", "title", "description", "type", "width", "height", "filesize", "storage", "filename_disk", "modified_on", "uploaded_on", "focal_point_x", "focal_point_y"] : ["*"], permissions: filter };
