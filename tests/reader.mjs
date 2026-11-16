@@ -40,7 +40,7 @@ try {
   assert.match(await frame.getAttribute("src"), /^https:\/\/www.youtube-nocookie.com\/embed\/[A-Za-z0-9_-]{11}\?autoplay=1$/);
   await page.keyboard.press("ArrowLeft");
   await at(4);
-  await page.reload();
+  await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(document.querySelector("astro-island")) && !document.querySelector("astro-island").hasAttribute("ssr"));
   await at(4);
   for (const [width, height] of [[320, 568], [390, 844], [768, 1024], [1440, 1000], [844, 390]]) {
