@@ -38,7 +38,9 @@ try {
   const preview = () => page.frameLocator('.ed-artboard iframe');
   await ready();
   assert.equal(await page.locator('.ed-form').getByLabel('Personaje o tema', { exact: true }).inputValue(), 'Frida');
-  await page.screenshot({ path: '/tmp/revista-editor-desktop.png' });
+  const mediaFits = await page.locator('.ed-media-picture').first().evaluate(button => { const image = button.querySelector('img'); return !image || image.getBoundingClientRect().height <= button.getBoundingClientRect().height + 1; });
+  assert.ok(mediaFits, 'The full photograph fits inside its editor card.');
+  await page.screenshot({ path: '/tmp/revista-editor-desktop.png', animations: 'disabled' });
   if (process.env.STUDIO_LAYOUT_ONLY !== '1') {
     await refresh(() => page.locator('.ed-form').getByLabel('Personaje o tema', { exact: true }).fill('Frida test'));
     assert.ok((await preview().locator('.journal-cover-copy h1').innerText()).includes('Frida test'));
