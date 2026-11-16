@@ -3,7 +3,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import { articles } from "../../data/articles";
-import { magazines } from "../../data/magazines";
+import { getEditions, editionPath } from "../../lib/directus";
+export const prerender = false;
+const magazines = await getEditions().catch(() => []);
+Astro.response.headers.set("Cache-Control", "public, max-age=0, s-maxage=30, stale-while-revalidate=60");
 ---
 <BaseLayout title="Todas las ediciones | Lo importante de hoy" description="Explora el archivo de cultura, historia, música, personajes e ideas.">
   <SiteHeader />
@@ -12,8 +15,8 @@ import { magazines } from "../../data/magazines";
     <section class="archive-list" aria-label="Revistas para hojear">
       <p class="section-index light">LA REVISTA <span></span> PÁGINA A PÁGINA</p>
       {magazines.map((edition, index) => <article class="archive-item">
-        <a class="archive-art" href={`/revista/${edition.slug}`} aria-label={`Hojear la revista de ${edition.title}`}><img src={edition.image} alt={`Portada original de ${edition.title}`} width="1024" height="1280" loading={index === 0 ? "eager" : "lazy"} style="object-fit:contain;object-position:left" /></a>
-        <div><p class="eyebrow"><time datetime={edition.date}>{edition.dateLabel}</time> · {edition.category}</p><h2><a href={`/revista/${edition.slug}`}>{edition.title}</a></h2><p>{edition.subtitle}</p><a class="text-link" href={`/revista/${edition.slug}`}>Hojear la revista <span>↗</span></a></div>
+        <a class="archive-art" href={editionPath(edition)} aria-label={`Hojear la revista de ${edition.title}`}><img src={edition.photograph || edition.image} alt={edition.title} width="1024" height="1280" loading={index === 0 ? "eager" : "lazy"} style={`object-position:${edition.photoPosition}`} /></a>
+        <div><p class="eyebrow"><time datetime={edition.date}>{edition.dateLabel}</time> · {edition.category}</p><h2><a href={editionPath(edition)}>{edition.title}</a></h2><p>{edition.subtitle}</p><a class="text-link" href={editionPath(edition)}>Hojear la revista <span>↗</span></a></div>
       </article>)}
     </section>
     <section class="archive-list" aria-label="Artículos del archivo">

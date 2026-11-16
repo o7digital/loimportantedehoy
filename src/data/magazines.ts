@@ -9,7 +9,11 @@ export type MagazineChapter = {
   entries?: { label: string; text: string }[];
   quote?: string;
   attribution?: string;
-  song?: { title: string; artist: string; album?: string; note: string };
+  song?: { title: string; artist: string; album?: string; note: string; url?: string };
+  layout?: "story" | "facts" | "quote" | "music";
+  image?: string;
+  photoCredit?: string;
+  photoSource?: string;
 };
 
 export type Magazine = {
@@ -20,6 +24,10 @@ export type Magazine = {
   subtitle: string;
   anniversary: string;
   image: string;
+  photograph?: string;
+  photoCredit?: string;
+  photoSource?: string;
+  photoPosition?: string;
   category: string;
   sources: string[];
   chapters: MagazineChapter[];
@@ -32,7 +40,7 @@ export const magazines: Magazine[] = [
     slug: "frida", date: "2026-11-15", dateLabel: "15 de noviembre de 2026",
     title: "Frida", subtitle: "La esperanza tenía cuatro patas.",
     anniversary: "Cuarto aniversario luctuoso · 2022–2026",
-    image: "/revistas/frida-2026-11-15.jpg", category: "Una vida que inspira",
+    image: "/revistas/frida-2026-11-15.jpg", category: "Una vida que inspira", photograph: "/editorial/frida.jpg", photoCredit: "Gobierno de la Ciudad de México · CC BY 4.0", photoSource: "https://commons.wikimedia.org/wiki/File:Frida,_perra_de_rescate_de_la_marina.jpg", photoPosition: "38% 38%",
     sources: ["Secretaría de Marina", "El Informador", "Clannad"],
     chapters: [
       { id: "portada", label: "Portada", kicker: "Una vida que inspira", title: "Frida" },
@@ -48,7 +56,7 @@ export const magazines: Magazine[] = [
         entries: [{ label: "Haití · 2010", text: "Terremoto." }, { label: "México · 2013", text: "Explosión de la Torre de Pemex." }, { label: "Ecuador · 2017", text: "Deslave." }, { label: "Oaxaca y Ciudad de México · 2017", text: "Sismos de septiembre." }],
       },
       {
-        id: "equipo", label: "El equipo", kicker: "Detrás de la heroína", title: "Nadie rescata en solitario.",
+        id: "equipo", label: "El equipo", kicker: "Detrás de la heroína", title: "Nadie rescata en solitario.", image: "/editorial/frida-equipo-semar.jpg", photoCredit: "Secretaría de Marina / Gobierno de México", photoSource: "https://www.gob.mx/semar/galerias/develacion-de-la-escultura-de-frida-elemento-canino-de-busqueda-y-rescate",
         intro: "Un binomio canino reúne al perro y a su manejador: olfato, entrenamiento y confianza para trabajar juntos.",
         entries: [{ label: "Gafas", text: "Protección para sus ojos." }, { label: "Botas", text: "Cuidado de las almohadillas." }, { label: "Arnés", text: "Apoyo en maniobras de rescate." }],
         paragraphs: ["Al retirarse, el 24 de junio de 2019, Frida entregó su equipo táctico y recibió un juguete. Comenzaba su vida de descanso y cuidados."],
@@ -60,14 +68,14 @@ export const magazines: Magazine[] = [
       },
       {
         id: "musica", label: "Música", kicker: "Música que conecta", title: "Una canción para recordarla.",
-        song: { title: "I Will Find You", artist: "Clannad", album: "El último de los mohicanos", note: "Una promesa de búsqueda y esperanza que evoca la misión de Frida. Una voz emotiva y serena para honrar su memoria." },
+        song: { title: "I Will Find You", artist: "Clannad", album: "El último de los mohicanos", url: "https://www.youtube.com/watch?v=poIUiyy9z24", note: "Una promesa de búsqueda y esperanza que evoca la misión de Frida. Una voz emotiva y serena para honrar su memoria." },
       },
     ],
   },
   {
     slug: "leon-russell", date: "2026-11-13", dateLabel: "13 de noviembre de 2026",
     title: "Leon Russell", subtitle: "El maestro detrás de los grandes maestros del rock.",
-    anniversary: "10 años de su partida · 2016–2026", image: "/revistas/leon-russell-2026-11-13.jpg",
+    anniversary: "10 años de su partida · 2016–2026", image: "/revistas/leon-russell-2026-11-13.jpg", photograph: "/editorial/leon-russell.jpg", photoCredit: "Jim Gilbert / Jtgphoto · CC BY-SA 4.0", photoSource: "https://commons.wikimedia.org/wiki/File:20160228-Leon_Russell-JTG.jpg", photoPosition: "60% 35%",
     category: "Una vida entre gigantes", sources: ["Edición original de JerryMC · 13 de noviembre"],
     chapters: [
       { id: "portada", label: "Portada", kicker: "Una vida entre gigantes", title: "Leon Russell" },
@@ -94,14 +102,14 @@ export const magazines: Magazine[] = [
       },
       {
         id: "musica", label: "Música", kicker: "Música que conecta", title: "Una declaración que trasciende el tiempo.",
-        song: { title: "A Song for You", artist: "Leon Russell", album: "Leon Russell · 1970", note: "Vuelve al piano y a la voz de su autor. Una canción que conecta a dos maestros y a todas las personas que alguna vez la hicieron suya." },
+        song: { title: "A Song for You", artist: "Leon Russell", album: "Canción publicada en 1970 · Versión en vídeo: Signature Songs", url: "https://www.youtube.com/watch?v=l0ELq9b147c", note: "Vuelve al piano y a la voz de su autor. Una canción que conecta a dos maestros y a todas las personas que alguna vez la hicieron suya." },
       },
     ],
   },
   {
     slug: "abbey-road", date: "2026-11-12", dateLabel: "12 de noviembre de 2026",
     title: "Abbey Road Studios", subtitle: "Aquí la música aprendió a imaginar lo imposible.",
-    anniversary: "95 años · 1931–2026", image: "/revistas/abbey-road-2026-11-12.jpg",
+    anniversary: "95 años · 1931–2026", image: "/revistas/abbey-road-2026-11-12.jpg", photograph: "/editorial/abbey-road-studio.jpg", photoCredit: "Misterweiss · Dominio público", photoSource: "https://commons.wikimedia.org/wiki/File:Abbey_Rd_Studios.jpg", photoPosition: "50% 60%",
     category: "Un lugar con historia", sources: ["Abbey Road Studios", "The Beatles", "Edición original de JerryMC"],
     chapters: [
       { id: "portada", label: "Portada", kicker: "Un lugar con historia", title: "Abbey Road Studios" },
@@ -127,7 +135,7 @@ export const magazines: Magazine[] = [
       },
       {
         id: "musica", label: "Música", kicker: "Música que conecta", title: "Escucha lo que un estudio puede imaginar.",
-        song: { title: "A Day in the Life", artist: "The Beatles", album: "Sgt. Pepper’s Lonely Hearts Club Band · 1967", note: "Orquesta, rock y experimentación: una obra que revela el estudio como instrumento creativo." },
+        song: { title: "A Day in the Life", artist: "The Beatles", album: "Sgt. Pepper’s Lonely Hearts Club Band · 1967", url: "https://www.youtube.com/watch?v=usNsCeOV4GM", note: "Orquesta, rock y experimentación: una obra que revela el estudio como instrumento creativo." },
       },
     ],
   },

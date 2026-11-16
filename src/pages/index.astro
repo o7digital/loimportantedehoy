@@ -1,5 +1,9 @@
 ---
 import EditorialExperience from "../components/EditorialExperience";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getEditions } from "../lib/directus";
+export const prerender = false;
+const [latestEdition] = await getEditions().catch(() => []);
+Astro.response.headers.set("Cache-Control", "public, max-age=0, s-maxage=30, stale-while-revalidate=60");
 ---
-<BaseLayout><EditorialExperience client:load /></BaseLayout>
+<BaseLayout><EditorialExperience latestEdition={latestEdition} client:load /></BaseLayout>

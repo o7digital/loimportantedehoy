@@ -1,0 +1,65 @@
+name: loimportante-cms
+services:
+  database:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: revista
+      POSTGRES_USER: revista
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password required}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U revista -d revista]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 384m
+    cpus: 0.5
+  directus:
+    image: directus/directus:11.17.4
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:8140:8055
+    environment:
+      SECRET: ${SECRET:?Application secret required}
+      DB_CLIENT: pg
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_DATABASE: revista
+      DB_USER: revista
+      DB_PASSWORD: ${DB_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      PUBLIC_URL: ${PUBLIC_URL}
+      CORS_ENABLED: 'true'
+      CORS_ORIGIN: https://loimportantedehoy.vercel.app
+      WEBSOCKETS_ENABLED: 'true'
+      TELEMETRY: 'false'
+      CACHE_ENABLED: 'false'
+      RATE_LIMITER_ENABLED: 'true'
+      IP_TRUST_PROXY: 'true'
+      REFRESH_TOKEN_COOKIE_SECURE: 'true'
+      SESSION_COOKIE_SECURE: 'true'
+      RATE_LIMITER_POINTS: 600
+      RATE_LIMITER_DURATION: 60
+      LOG_LEVEL: warn
+    volumes:
+      - uploads:/directus/uploads
+    networks:
+      default:
+      ingress:
+        aliases: [loimportante-directus]
+    mem_limit: 1024m
+    cpus: 1.0
+volumes:
+  postgres:
+    name: loimportante-cms_postgres_v11
+  uploads:
+networks:
+  ingress:
+    external: true
+    name: ${INGRESS_NETWORK:?Existing proxy network required}

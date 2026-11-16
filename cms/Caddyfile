@@ -1,0 +1,6 @@
+# Dedicated virtual host, appended to the existing proxy configuration.
+revista-cms.92.222.23.247.sslip.io {
+  encode zstd gzip
+  header X-Robots-Tag "noindex, nofollow"
+  reverse_proxy loimportante-directus:8055
+}

@@ -2,7 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 import { site } from "../config/site";
-import { latestMagazine } from "../data/magazines";
+import type { Magazine } from "../data/magazines";
 
 const editions = [
   { number: "Nº 218", date: "30 AGO 1973", title: "El día en que The Doors anunció su disolución", category: "Música e Historia", featured: true },
@@ -20,7 +20,7 @@ const benefits = [
 function Arrow({ down = false }: { down?: boolean }) { return <span aria-hidden="true">{down ? "↓" : "↗"}</span>; }
 function Prism() { return <span className="prism" aria-hidden="true"><span className="prism-beam" /></span>; }
 
-export default function Home() {
+export default function Home({ latestEdition }: { latestEdition?: Magazine }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [joined, setJoined] = useState(false);
@@ -43,7 +43,7 @@ export default function Home() {
         <div className="hero-rail"><span>HECHOS</span><i /><span>PERSONAJES</span><i /><span>MÚSICA</span><i /><span>IDEAS</span></div>
       </section>
 
-      <a className="magazine-invitation" href="/revista"><img src={latestMagazine.image} alt="Portada de la revista de Frida" width="80" height="100" loading="lazy" /><div><span>LA REVISTA · {latestMagazine.dateLabel.toUpperCase()}</span><h2>{latestMagazine.title}<em>{latestMagazine.subtitle}</em></h2><p>Una historia, página a página. Hecha para leer en tu móvil.</p></div><strong>Hojear la revista <Arrow /></strong></a>
+      {latestEdition && <a className="magazine-invitation" href="/revista"><img src={latestEdition.photograph || latestEdition.image} alt={latestEdition.title} width="80" height="100" loading="lazy" /><div><span>LA REVISTA · {latestEdition.dateLabel.toUpperCase()}</span><h2>{latestEdition.title}<em>{latestEdition.subtitle}</em></h2><p>La edición del día. Hechos, música y palabras para llevar contigo.</p></div><strong>Hojear la revista <Arrow /></strong></a>}
 
       <section className="intro" id="manifiesto">
         <div className="section-index">01 <span /> UNA PAUSA EN EL RUIDO</div>

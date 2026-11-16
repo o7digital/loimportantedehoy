@@ -1,6 +1,6 @@
 export const site = {
   name: "Lo importante de hoy",
-  url: "https://loimportantehoy.mx",
+  url: "https://loimportantedehoy.vercel.app",
   description: "Una revista digital de cultura, historia, música e ideas para lectores curiosos.",
   membership: { price: 99, currency: "MXN", period: "mes" },
   instagram: "https://www.instagram.com/loimportantehoyjerrymc/",

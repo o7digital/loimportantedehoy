@@ -1,0 +1,1 @@
+Cormorant Garamond (Christian Thalmann) and DM Sans (Colophon Foundry, Jonny Pinhorn), served locally. Both are licensed under the SIL Open Font License 1.1. Sources: https://fonts.google.com/specimen/Cormorant+Garamond and https://fonts.google.com/specimen/DM+Sans

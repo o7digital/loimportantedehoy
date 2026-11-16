@@ -1,0 +1,5 @@
+---
+const { failed = false } = Astro.props;
+---
+<main class="unavailable"><a href="/">Lo importante de hoy</a><p>LA REVISTA</p><h1>{failed ? "Volvemos en un momento." : "Esta historia aún no está disponible."}</h1><p>{failed ? "No pudimos abrir la edición. Vuelve a intentarlo en unos instantes." : "Puedes descubrir otra fecha en nuestro archivo de ediciones."}</p><a href={failed ? Astro.url.pathname : "/ediciones"}>{failed ? "Volver a intentar ↗" : "Explorar las ediciones ↗"}</a></main>
+<style>.unavailable{min-height:100svh;background:#f4f1e9;padding:12vh 8vw;color:#232620}.unavailable>a:first-child{font:28px Georgia,serif}.unavailable>p{color:#797a70;max-width:500px;line-height:1.7}.unavailable>p:first-of-type{font-size:10px;letter-spacing:2px;margin-top:100px}.unavailable h1{font:400 clamp(40px,6vw,80px)/1 Georgia,serif;max-width:850px;letter-spacing:-2px}.unavailable>a:last-child{display:inline-block;margin-top:30px;color:#9e3128;text-decoration:underline}</style>

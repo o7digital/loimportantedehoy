@@ -1,8 +1,15 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import MagazineReader from "../../components/MagazineReader";
-import { latestMagazine, magazines } from "../../data/magazines";
+import MagazineUnavailable from "../../components/MagazineUnavailable.astro";
+import { getEdition, getEditions, editionPath } from "../../lib/directus";
+export const prerender = false;
+let edition, editions = [], failed = false;
+try { [edition, editions] = await Promise.all([getEdition(), getEditions()]); }
+catch (error) { failed = true; console.error("Magazine CMS unavailable:", error instanceof Error ? error.message : "unknown error"); }
+if (!edition) Astro.response.status = failed ? 503 : 404;
+Astro.response.headers.set("Cache-Control", edition ? "public, max-age=0, s-maxage=30, stale-while-revalidate=60" : "no-store");
 ---
-<BaseLayout title={`${latestMagazine.title} · La revista | Lo importante de hoy`} description="La edición de hoy, página a página. Desliza para descubrir historias, palabras que inspiran y música que conecta." canonical={`/revista/${latestMagazine.slug}`} image={latestMagazine.image}>
-  <MagazineReader edition={latestMagazine} editions={magazines} client:load />
+<BaseLayout title={edition ? `${edition.title} · ${edition.dateLabel} | Lo importante de hoy` : "La revista | Lo importante de hoy"} description={edition?.subtitle} canonical={edition ? editionPath(edition) : "/revista"} image={edition?.photograph}>
+  {edition ? <MagazineReader edition={edition} editions={editions} client:load /> : <MagazineUnavailable failed={failed} />}
 </BaseLayout>

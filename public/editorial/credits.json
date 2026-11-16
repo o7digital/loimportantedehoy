@@ -1,0 +1,63 @@
+{
+  "frida": {
+    "file": "/editorial/frida.jpg",
+    "title": "Frida, perra de rescate de la Marina",
+    "creator": "Gobierno de la Ciudad de México",
+    "credit": "Gobierno de la Ciudad de México / Wikimedia Commons · CC BY 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Frida,_perra_de_rescate_de_la_marina.jpg",
+    "originalSource": "http://www.cdmx.gob.mx/comunicacion/nota/promueve-gobierno-de-cdmx-cuidado-responsable-de-animales-de-compania",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/9/92/Frida%2C_perra_de_rescate_de_la_marina.jpg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "date": "2017-04-09",
+    "width": 593,
+    "height": 531,
+    "modifications": "None; original image downloaded without modification.",
+    "cropNote": "Full seated dog, face in upper-left quadrant. Keep goggles and MARINA collar visible. Native resolution is 593px wide. Red carpet makes a strong burgundy/red editorial color story."
+  },
+  "leon-russell": {
+    "file": "/editorial/leon-russell.jpg",
+    "title": "Leon Russell performing at the Egg, Albany, New York",
+    "creator": "Jim Gilbert / Jtgphoto",
+    "credit": "Jim Gilbert / Jtgphoto / Wikimedia Commons · CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:20160228-Leon_Russell-JTG.jpg",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/4/45/20160228-Leon_Russell-JTG.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "date": "2016-02-28",
+    "width": 1200,
+    "height": 1200,
+    "modifications": "None locally. The Commons supplied version has exposure adjustment and watermark removal by R8cocin8 (2023).",
+    "cropNote": "Strong seated portrait at piano, white hat and beard against black background. Face around 61% x / 24% y. Use object-position 60% 35% for portrait crops; keep piano visible for musical context."
+  },
+  "abbey-road": {
+    "file": "/editorial/abbey-road-studio.jpg",
+    "title": "Abbey Road Studios exterior",
+    "creator": "Misterweiss; perspective correction by Waterborough",
+    "credit": "Misterweiss / Wikimedia Commons · Public domain",
+    "source": "https://commons.wikimedia.org/wiki/File:Abbey_Rd_Studios.jpg",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Abbey_Rd_Studios.jpg",
+    "license": "Public domain",
+    "licenseUrl": "https://commons.wikimedia.org/wiki/File:Abbey_Rd_Studios.jpg#Licensing",
+    "date": "2007-09-24",
+    "width": 3200,
+    "height": 2400,
+    "modifications": "None locally. The Commons version has perspective correction by Waterborough (2018).",
+    "cropNote": "Symmetrical white studio facade, Abbey Road logo above central door, steps and dark railings. Center crop around 50% 60% works on mobile. Upper white facade has clear space suitable for dark editorial headings."
+  },
+  "frida-equipo-semar": {
+    "file": "/editorial/frida-equipo-semar.jpg",
+    "title": "Frida con el equipo de búsqueda y rescate de la Secretaría de Marina",
+    "creator": "Secretaría de Marina",
+    "credit": "Secretaría de Marina / Gobierno de México",
+    "source": "https://www.gob.mx/semar/galerias/develacion-de-la-escultura-de-frida-elemento-canino-de-busqueda-y-rescate",
+    "downloadUrl": "https://www.gob.mx/cms/uploads/image/file/754166/WhatsApp_Image_2022-10-06_at_15.42.52.jpeg",
+    "license": "Official institutional press gallery; no explicit license found on the source page.",
+    "licenseUrl": "https://www.gob.mx/semar/galerias/develacion-de-la-escultura-de-frida-elemento-canino-de-busqueda-y-rescate",
+    "date": "2022-10-06",
+    "width": 1280,
+    "height": 852,
+    "modifications": "None; original government image downloaded without modification.",
+    "cropNote": "Wide group portrait with Frida central, blue rescue uniforms. Use as full-width supporting photo for a chapter about the team; not a tight hero crop."
+  }
+}

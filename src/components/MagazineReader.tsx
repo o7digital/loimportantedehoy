@@ -2,44 +2,37 @@ import { useEffect, useRef, useState } from "react";
 import type { Magazine, MagazineChapter } from "../data/magazines";
 import "../styles/magazine.css";
 
-function Arrow({ previous = false }: { previous?: boolean }) {
-  return <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d={previous ? "M19 12H5m6-6-6 6 6 6" : "M5 12h14m-6-6 6 6-6 6"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+const number = (value: number) => String(value).padStart(2, "0");
+const path = (edition: Magazine) => `/revista/${edition.date}`;
+function Arrow({ back = false }: { back?: boolean }) {
+  return <svg viewBox="0 0 32 24" fill="none" aria-hidden="true"><path d={back ? "M29 12H3m9-9-9 9 9 9" : "M3 12h26m-9-9 9 9-9 9"} stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
-
-function ChapterContent({ chapter, edition, nextEdition }: { chapter: MagazineChapter; edition: Magazine; nextEdition: Magazine }) {
-  if (chapter.id === "portada") {
-    return <div className="reader-cover-content">
-      <div className="reader-cover-topline"><span>LA EDICIÓN DEL DÍA</span><span>JERRYMC ↗</span></div>
-      <a className="reader-poster" href={edition.image} target="_blank" rel="noreferrer" aria-label={`Ver la portada original de ${edition.title} en tamaño completo`}>
-        <img src={edition.image} alt={`Edición original de ${edition.title}, ${edition.dateLabel}`} width="1024" height="1280" fetchPriority="high" />
-        <span>Ver original <span aria-hidden="true">↗</span></span>
-      </a>
-      <div className="reader-cover-heading"><p className="reader-kicker">{edition.category}</p><h1>{edition.title}</h1><p>{edition.subtitle}</p><span className="reader-anniversary">{edition.anniversary}</span></div>
-      <p className="reader-swipe-hint"><span aria-hidden="true">⟷</span> Desliza y descubre la historia</p>
-    </div>;
-  }
-
-  return <div className={`reader-chapter-content${chapter.quote ? " has-quote" : ""}${chapter.song ? " has-song" : ""}`}>
-    <div className="reader-page-topline"><span>LO IMPORTANTE DE HOY</span><span>{edition.title}</span></div>
-    <p className="reader-kicker">{chapter.kicker}</p>
-    <h2>{chapter.title}</h2>
-    {chapter.intro && <p className="reader-lead">{chapter.intro}</p>}
-    {chapter.stats && <div className="reader-stats">{chapter.stats.map((stat) => <div key={stat.label}><strong>{stat.value}</strong><span>{stat.label}</span></div>)}</div>}
-    {chapter.quote && <blockquote className="reader-quote"><span aria-hidden="true">“</span><p>{chapter.quote}</p><cite>{chapter.attribution}</cite></blockquote>}
-    {chapter.entries && <dl className="reader-entries">{chapter.entries.map((entry, index) => <div key={entry.label}><span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><div><dt>{entry.label}</dt><dd>{entry.text}</dd></div></div>)}</dl>}
-    {chapter.paragraphs?.map((paragraph) => <p className="reader-paragraph" key={paragraph}>{paragraph}</p>)}
-    {chapter.song && <>
-      <div className="reader-song">
-        <div className="reader-record" aria-hidden="true"><span>LI<br />DH</span></div>
-        <div className="reader-song-info"><span>LA CANCIÓN DE ESTA EDICIÓN</span><h3>{chapter.song.title}</h3><p>{chapter.song.artist}</p><small>{chapter.song.album}</small></div>
-        <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${chapter.song.artist} ${chapter.song.title}`)}`} target="_blank" rel="noreferrer">Buscar en YouTube <span aria-hidden="true">↗</span></a>
-      </div>
-      <p className="reader-paragraph reader-song-note">{chapter.song.note}</p>
-      <div className="reader-colophon"><p>FUENTES DE LA EDICIÓN ORIGINAL</p><span>{edition.sources.join(" · ")}</span><p>Una edición de JerryMC · Adaptada para lectura digital.</p><a href={edition.image} target="_blank" rel="noreferrer">Consultar la edición original ↗</a></div>
-      <a className="reader-next-edition" href={`/revista/${nextEdition.slug}`}><span>OTRA HISTORIA TE ESPERA<strong>{nextEdition.title}</strong></span><Arrow /></a>
-    </>}
-    <div className="reader-page-signature"><span>Hechos. Música. Palabras.</span><span>JerryMC</span></div>
+function Photograph({ edition, chapter }: { edition: Magazine; chapter?: MagazineChapter }) {
+  const credit = chapter?.photoCredit || edition.photoCredit;
+  const source = chapter?.photoSource || edition.photoSource;
+  return <figure className="journal-photograph"><img src={chapter?.image || edition.photograph || edition.image} alt={edition.title} style={{ objectPosition: edition.photoPosition || "50% 50%" }} loading={chapter ? "lazy" : "eager"} fetchPriority={chapter ? "auto" : "high"} /><figcaption>{credit}{source && <> · <a href={source} target="_blank" rel="noreferrer">Fuente ↗</a></>}</figcaption></figure>;
+}
+function MusicPlayer({ chapter }: { chapter: MagazineChapter }) {
+  const [playing, setPlaying] = useState(false);
+  const song = chapter.song!;
+  const videoId = song.url?.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1];
+  if (playing && videoId) return <iframe className="journal-player" src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`} title={`${song.artist} — ${song.title}`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />;
+  return videoId ? <button className="journal-listen" type="button" onClick={() => setPlaying(true)}><span className="journal-play" aria-hidden="true">▷</span>Escuchar {song.title}<span aria-hidden="true">↗</span></button> : <a className="journal-listen" href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${song.artist} ${song.title}`)}`} target="_blank" rel="noreferrer"><span className="journal-play" aria-hidden="true">▷</span>Buscar la canción en YouTube<span aria-hidden="true">↗</span></a>;
+}
+function EditionPage({ chapter, edition, index, nextEdition }: { chapter: MagazineChapter; edition: Magazine; index: number; nextEdition?: Magazine }) {
+  const layout = chapter.layout || (chapter.song ? "music" : chapter.quote ? "quote" : chapter.stats || chapter.entries ? "facts" : "story");
+  if (index === 0) return <div className="journal-page-inner journal-cover-layout">
+    <div className="journal-cover-copy"><p className="journal-eyebrow"><span />{edition.category}</p><span className="journal-cover-anniversary">{edition.anniversary}</span><h1>{edition.title}<span>.</span></h1><p className="journal-cover-deck">{edition.subtitle}</p><div className="journal-cover-rule" /><p className="journal-cover-intro">{edition.chapters.find(page => page.intro)?.intro}</p><div className="journal-byline"><span>POR JERRYMC</span><span>{edition.chapters.length} páginas · Una historia para llevar contigo</span></div></div>
+    <div className="journal-cover-visual"><Photograph edition={edition} /><span className="journal-photo-label">LA HISTORIA<br />DE ESTE DÍA</span><span className="journal-cover-date">{edition.date.slice(8)}<small>{new Intl.DateTimeFormat("es", { month: "short", timeZone: "UTC" }).format(new Date(`${edition.date}T12:00:00Z`)).toUpperCase()}</small></span></div>
+    <div className="journal-cover-bottom"><p>Hechos que importan.<br /><em>Historias que se quedan.</em></p><span>DESLIZA PARA COMENZAR <Arrow /></span></div>
   </div>;
+  if (layout === "music" && chapter.song) return <div className="journal-page-inner journal-music-layout">
+    <div className="journal-music-art"><div className="journal-vinyl"><div><span>LO IMPORTANTE<br />DE HOY</span><i /><small>{chapter.song.artist}</small></div></div><span className="journal-record-side">LADO A · LA CANCIÓN DEL DÍA</span><h2>{chapter.song.title}</h2><p>{chapter.song.artist}</p></div>
+    <div className="journal-music-copy"><p className="journal-eyebrow">{number(index)} / {chapter.kicker}</p><h2>{chapter.title}</h2><p className="journal-lead">{chapter.song.note}</p><p className="journal-album">{chapter.song.album}</p><MusicPlayer chapter={chapter} /><div className="journal-endnote"><strong>Hasta la próxima historia.</strong><p>Una edición de JerryMC. Gracias por hacer una pausa para leer lo importante.</p><p className="journal-sources">Fuentes: {edition.sources.join(" · ")}</p><a href={edition.image} target="_blank" rel="noreferrer">Ver la edición gráfica original ↗</a></div>{nextEdition && <a className="journal-next-issue" href={path(nextEdition)}><span>OTRA FECHA, OTRA HISTORIA<strong>{nextEdition.title}</strong></span><Arrow /></a>}</div>
+  </div>;
+  if (layout === "quote" && chapter.quote) return <div className="journal-page-inner journal-quote-layout"><div className="journal-quote-main"><p className="journal-eyebrow">{number(index)} / {chapter.kicker}</p><span className="journal-opening-quote" aria-hidden="true">“</span><blockquote><p>{chapter.quote}</p><cite>{chapter.attribution}</cite></blockquote><div className="journal-quote-rule" /><p className="journal-quote-reflection">{chapter.paragraphs?.[0] || chapter.intro}</p></div><div className="journal-quote-visual"><Photograph edition={edition} chapter={chapter} /><span>Palabras<br /><em>que se quedan.</em></span></div></div>;
+  if (layout === "facts") return <div className={`journal-page-inner journal-details-layout${chapter.stats ? " journal-has-stats" : ""}`}><div className="journal-details-heading"><p className="journal-eyebrow">{number(index)} / {chapter.kicker}</p><h2>{chapter.title}</h2>{chapter.intro && <p className="journal-lead">{chapter.intro}</p>}{chapter.stats && <div className="journal-big-stats">{chapter.stats.map(stat => <div key={stat.label}><strong>{stat.value}</strong><span>{stat.label}</span></div>)}</div>}{!chapter.stats && <Photograph edition={edition} chapter={chapter} />}</div><div className="journal-details-body"><span className="journal-section-caption">{chapter.stats ? "MISIONES QUE DEJARON HUELLA" : "LOS DETALLES TAMBIÉN CUENTAN"}</span><ol className="journal-entry-list">{chapter.entries?.map((entry, entryIndex) => <li key={entry.label}><span>{number(entryIndex + 1)}</span><div><h3>{entry.label}</h3><p>{entry.text}</p></div></li>)}</ol>{chapter.paragraphs?.map(paragraph => <p className="journal-body-text" key={paragraph}>{paragraph}</p>)}<span className="journal-handwritten">{edition.title}</span></div></div>;
+  return <div className="journal-page-inner journal-story-layout"><div className="journal-story-heading"><p className="journal-eyebrow">{number(index)} / {chapter.kicker}</p><h2>{chapter.title}</h2><Photograph edition={edition} chapter={chapter} /></div><div className="journal-story-body"><span className="journal-section-caption">LA HISTORIA DETRÁS DEL NOMBRE</span>{chapter.intro && <p className="journal-lead">{chapter.intro}</p>}{chapter.paragraphs?.map((paragraph, i) => <p className={`journal-body-text${i === 0 ? " journal-dropcap" : ""}`} key={paragraph}>{paragraph}</p>)}<div className="journal-story-end"><span /><em>Lo importante permanece.</em></div></div></div>;
 }
 
 export default function MagazineReader({ edition, editions }: { edition: Magazine; editions: Magazine[] }) {
@@ -49,110 +42,47 @@ export default function MagazineReader({ edition, editions }: { edition: Magazin
   const track = useRef<HTMLDivElement>(null);
   const tabs = useRef<HTMLElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const activeIndex = useRef(0);
-  const nextEdition = editions[(editions.findIndex((item) => item.slug === edition.slug) + 1) % editions.length];
-
+  const active = useRef(0);
+  const nextEdition = editions.length > 1 ? editions[(editions.findIndex(item => item.date === edition.date) + 1) % editions.length] : undefined;
+  const weekday = new Intl.DateTimeFormat("es-MX", { weekday: "long", timeZone: "UTC" }).format(new Date(`${edition.date}T12:00:00Z`));
   function goTo(index: number, smooth = true) {
     const container = track.current;
     if (!container) return;
     const bounded = Math.max(0, Math.min(edition.chapters.length - 1, index));
     container.scrollTo({ left: bounded * container.clientWidth, behavior: smooth && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "smooth" : "instant" });
   }
-
   useEffect(() => {
     const container = track.current;
     if (!container) return;
-    function fromHash() {
-      const index = edition.chapters.findIndex((chapter) => `#${chapter.id}` === window.location.hash);
-      goTo(Math.max(index, 0), false);
-      activeIndex.current = Math.max(index, 0);
-      setCurrent(activeIndex.current);
-    }
-    fromHash();
-    setReady(true);
-    window.addEventListener("hashchange", fromHash);
+    const fromHash = () => { const index = Math.max(0, edition.chapters.findIndex(chapter => `#${chapter.id}` === location.hash)); active.current = index; goTo(index, false); setCurrent(index); };
+    fromHash(); setReady(true); window.addEventListener("hashchange", fromHash);
     let width = container.clientWidth;
-    const observer = new ResizeObserver(() => {
-      if (container.clientWidth !== width) {
-        width = container.clientWidth;
-        goTo(activeIndex.current, false);
-      }
-    });
+    const observer = new ResizeObserver(() => { if (width !== container.clientWidth) { width = container.clientWidth; goTo(active.current, false); } });
     observer.observe(container);
     return () => { observer.disconnect(); window.removeEventListener("hashchange", fromHash); };
-  }, [edition.slug]);
-
+  }, [edition.date]);
   useEffect(() => {
     if (!ready) return;
-    activeIndex.current = current;
-    window.history.replaceState(null, "", `#${edition.chapters[current].id}`);
-    const button = tabs.current?.children[current] as HTMLElement | undefined;
-    if (button && tabs.current) tabs.current.scrollTo({ left: button.offsetLeft - tabs.current.offsetLeft - 16, behavior: "instant" });
+    active.current = current; history.replaceState(null, "", `#${edition.chapters[current].id}`);
+    const tab = tabs.current?.children[current] as HTMLElement | undefined;
+    if (tab && tabs.current) tabs.current.scrollTo({ left: tab.offsetLeft - tabs.current.offsetLeft - 20, behavior: "instant" });
   }, [current, ready, edition]);
-
+  useEffect(() => { if (sheet) dialog.current?.showModal(); else dialog.current?.close(); }, [sheet]);
   useEffect(() => {
-    if (sheet) dialog.current?.showModal();
-    else dialog.current?.close();
-  }, [sheet]);
-
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (sheet || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
-      if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select, [contenteditable='true']")) return;
-      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-        event.preventDefault();
-        goTo(current + (event.key === "ArrowRight" ? 1 : -1));
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [current, sheet, edition.slug]);
-
-  function chapterLinks(mobile = false) {
-    return edition.chapters.map((chapter, index) => <a key={chapter.id} href={`#${chapter.id}`} aria-current={current === index ? "step" : undefined} onClick={(event) => { event.preventDefault(); goTo(index); if (mobile) setSheet(null); }}><span>{String(index + 1).padStart(2, "0")}</span>{chapter.label}<span aria-hidden="true">↗</span></a>);
-  }
-
-  return <main className="magazine-reader">
-    <header className="reader-header">
-      <a className="brand" href="/" aria-label="Lo importante de hoy — inicio"><span className="prism" aria-hidden="true"><span className="prism-beam" /></span><span className="brand-copy">Lo <b>importante</b><br />de hoy</span></a>
-      <span className="reader-header-label">LA REVISTA DIGITAL</span>
-      <a className="reader-back" href="/">Volver al inicio <span aria-hidden="true">↗</span></a>
-    </header>
-
-    <div className="reader-layout">
-      <aside className="reader-sidebar">
-        <p className="reader-kicker">UNA PAUSA EN EL RUIDO</p><h2>Un momento.<br /><em>Una buena historia.</em></h2><p className="reader-sidebar-intro">Hechos que importan, palabras que inspiran y una canción para llevar contigo.</p>
-        <div className="reader-sidebar-label">EN ESTA EDICIÓN <span>{String(edition.chapters.length).padStart(2, "0")} PÁGINAS</span></div>
-        <nav className="reader-contents" aria-label="Secciones de la edición">{chapterLinks()}</nav>
-        <button className="reader-archive-button" type="button" onClick={() => setSheet("editions")}>Explorar otras ediciones <Arrow /></button>
-        <div className="reader-sidebar-foot"><span>Una revista de</span><strong>JerryMC</strong><a href="https://www.instagram.com/loimportantehoyjerrymc/" target="_blank" rel="noreferrer">@loimportantehoyjerrymc ↗</a></div>
-      </aside>
-
-      <section className="reader-book" aria-label={`Revista: ${edition.title}`}>
-        <div className="reader-toolbar"><button className="reader-edition-button" type="button" onClick={() => setSheet("editions")} aria-haspopup="dialog"><span className="reader-live-dot" /><time dateTime={edition.date}>{edition.dateLabel.replace(/ de \d{4}$/, "")}</time><span aria-hidden="true">⌄</span></button><button className="reader-index-button" type="button" onClick={() => setSheet("index")} aria-haspopup="dialog"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="currentColor" strokeWidth="1.3" /></svg>Índice</button></div>
-        <nav className="reader-tabs" aria-label="Páginas de la revista" ref={tabs}>{edition.chapters.map((chapter, index) => <a href={`#${chapter.id}`} key={chapter.id} aria-current={current === index ? "step" : undefined} onClick={(event) => { event.preventDefault(); goTo(index); }}><span>{String(index + 1).padStart(2, "0")}</span>{chapter.label}</a>)}</nav>
-        <div className="reader-track" ref={track} tabIndex={0} aria-label="Desliza para cambiar de página o usa las flechas del teclado" onScroll={() => {
-          const container = track.current;
-          if (container) {
-            const index = Math.max(0, Math.min(edition.chapters.length - 1, Math.round(container.scrollLeft / container.clientWidth)));
-            activeIndex.current = index;
-            setCurrent(index);
-          }
-        }}>
-          {edition.chapters.map((chapter, index) => <article className={`reader-page${index === 0 ? " reader-cover" : ""}`} id={chapter.id} key={chapter.id} aria-label={`${index + 1} de ${edition.chapters.length}: ${chapter.label}`} aria-hidden={ready && current !== index ? true : undefined} inert={ready && current !== index ? true : undefined}>
-            <ChapterContent chapter={chapter} edition={edition} nextEdition={nextEdition} />
-          </article>)}
-        </div>
-        <div className="reader-progress" aria-hidden="true"><span style={{ width: `${((current + 1) / edition.chapters.length) * 100}%` }} /></div>
-        <div className="reader-controls"><button type="button" onClick={() => goTo(current - 1)} disabled={current === 0} aria-label="Página anterior"><Arrow previous /><span>Anterior</span></button><span className="reader-page-count"><strong>{String(current + 1).padStart(2, "0")}</strong><span>/</span>{String(edition.chapters.length).padStart(2, "0")}</span><button type="button" onClick={() => goTo(current + 1)} disabled={current === edition.chapters.length - 1} aria-label="Página siguiente"><span>Siguiente</span><Arrow /></button></div>
-      </section>
-      <p className="reader-desktop-hint">LEE A TU RITMO <span>← →</span> USA LAS FLECHAS O DESLIZA</p>
-    </div>
+    const handle = (event: KeyboardEvent) => {
+      if (sheet || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || (event.target instanceof HTMLElement && event.target.closest("input,textarea,select,[contenteditable='true']"))) return;
+      if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); goTo(current + (event.key === "ArrowRight" ? 1 : -1)); }
+    };
+    window.addEventListener("keydown", handle); return () => window.removeEventListener("keydown", handle);
+  }, [current, sheet, edition.date]);
+  return <main className={`journal journal-issue-${edition.slug}${edition.title.length > 10 ? " journal-long-title" : ""}`}>
+    <div className="journal-utility"><a href="/" aria-label="Volver a la landing">← El proyecto</a><span>UNA REVISTA DE JERRYMC</span><button type="button" onClick={() => setSheet("editions")} aria-haspopup="dialog">Otras ediciones <span aria-hidden="true">↗</span></button></div>
+    <header className="journal-masthead"><a className="journal-wordmark" href="/revista">Lo importante <em>de hoy</em><span className="journal-red-dot" /></a><div className="journal-masthead-note">Hechos y personajes importantes.<br />Música que conecta. Palabras que inspiran.</div></header>
+    <div className="journal-date-line"><span><span className="journal-today-dot" />{weekday.charAt(0).toUpperCase() + weekday.slice(1)}, <time dateTime={edition.date}>{edition.dateLabel}</time></span><span className="journal-date-caption">UNA HISTORIA. UNA CANCIÓN. UNA PAUSA.</span><button type="button" onClick={() => setSheet("index")} aria-haspopup="dialog"><span aria-hidden="true">☰</span> En esta edición</button></div>
+    <nav className="journal-tabs" aria-label="Secciones de la revista" ref={tabs}>{edition.chapters.map((chapter, index) => <a key={chapter.id} href={`#${chapter.id}`} aria-current={index === current ? "step" : undefined} onClick={event => { event.preventDefault(); goTo(index); }}><span>{number(index)}</span>{chapter.label}</a>)}</nav>
+    <div className="journal-track" ref={track} tabIndex={0} aria-label="Páginas de la revista. Desliza o usa las flechas para pasar de página." onScroll={() => { const container = track.current; if (container) { const index = Math.max(0, Math.min(edition.chapters.length - 1, Math.round(container.scrollLeft / container.clientWidth))); active.current = index; setCurrent(index); } }}>{edition.chapters.map((chapter, index) => <article id={chapter.id} key={chapter.id} className={`journal-page${chapter.quote && (!chapter.layout || chapter.layout === "quote") ? " journal-page-dark" : ""}`} data-current={current === index} aria-label={`${index + 1} de ${edition.chapters.length}: ${chapter.label}`} aria-hidden={ready && current !== index ? true : undefined} inert={ready && current !== index ? true : undefined}><EditionPage chapter={chapter} edition={edition} index={index} nextEdition={nextEdition} /></article>)}</div>
+    <footer className="journal-controls"><button type="button" aria-label="Página anterior" disabled={current === 0} onClick={() => goTo(current - 1)}><Arrow back /><span>Anterior</span></button><div className="journal-folio"><span>{edition.chapters[current].label}</span><strong>{number(current + 1)} <i>/</i> {number(edition.chapters.length)}</strong><div className="journal-progress-dots" aria-hidden="true">{edition.chapters.map((chapter, index) => <span key={chapter.id} data-current={index === current} />)}</div></div><button type="button" aria-label="Página siguiente" disabled={current === edition.chapters.length - 1} onClick={() => goTo(current + 1)}><span>{current === 0 ? "Comenzar lectura" : "Siguiente página"}</span><Arrow /></button></footer>
     <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">Página {current + 1} de {edition.chapters.length}: {edition.chapters[current].label}</div>
-    <dialog className="reader-dialog" ref={dialog} onClose={() => setSheet(null)} onClick={(event) => { if (event.target === event.currentTarget) setSheet(null); }} aria-labelledby="reader-dialog-title">
-      <div className="reader-dialog-inner"><button className="reader-dialog-close" type="button" aria-label="Cerrar" onClick={() => setSheet(null)}>×</button><p className="reader-kicker">LO IMPORTANTE DE HOY</p><h2 id="reader-dialog-title">{sheet === "editions" ? "Elige una historia." : "En esta edición."}</h2>
-      {sheet === "editions" ? <div className="reader-edition-list">{editions.map((item) => <a href={`/revista/${item.slug}`} key={item.slug} aria-current={edition.slug === item.slug ? "page" : undefined}><img src={item.image} alt="" width="80" height="100" loading="lazy" /><div><time dateTime={item.date}>{item.dateLabel.replace(/ de \d{4}$/, "")}</time><h3>{item.title}</h3><p>{item.subtitle}</p></div><span aria-hidden="true">↗</span></a>)}</div> : <nav className="reader-contents" aria-label="Índice de la revista">{chapterLinks(true)}</nav>}
-      </div>
-    </dialog>
+    <dialog className="journal-dialog" ref={dialog} aria-labelledby="journal-dialog-title" onClose={() => setSheet(null)} onClick={event => { if (event.target === event.currentTarget) setSheet(null); }}><div className="journal-dialog-inner"><button className="journal-dialog-close" type="button" aria-label="Cerrar" onClick={() => setSheet(null)}>×</button><p className="journal-eyebrow">LO IMPORTANTE DE HOY</p><h2 id="journal-dialog-title">{sheet === "editions" ? <>Cada día,<br /><em>una nueva mirada.</em></> : <>En esta<br /><em>edición.</em></>}</h2>{sheet === "editions" ? <div className="journal-edition-list">{editions.map(item => <a href={path(item)} key={item.date} aria-current={item.date === edition.date ? "page" : undefined}><img src={item.photograph || item.image} alt="" width="100" height="100" loading="lazy" /><div><time dateTime={item.date}>{item.dateLabel}</time><h3>{item.title}</h3><p>{item.subtitle}</p></div><span aria-hidden="true">↗</span></a>)}</div> : <nav className="journal-toc" aria-label="Índice de la revista">{edition.chapters.map((chapter, index) => <a key={chapter.id} href={`#${chapter.id}`} aria-current={index === current ? "step" : undefined} onClick={event => { event.preventDefault(); goTo(index); setSheet(null); }}><span>{number(index + 1)}</span><div>{chapter.label}<small>{chapter.kicker}</small></div><span aria-hidden="true">↗</span></a>)}</nav>}</div></dialog>
   </main>;
 }
