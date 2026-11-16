@@ -3,13 +3,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { site } from "../config/site";
 import type { Magazine } from "../data/magazines";
-
-const editions = [
-  { number: "Nº 218", date: "30 AGO 1973", title: "El día en que The Doors anunció su disolución", category: "Música e Historia", featured: true },
-  { number: "Nº 217", date: "29 AGO 2026", title: "Ingrid Bergman: una vida fuera del guion", category: "Personajes" },
-  { number: "Nº 216", date: "28 AGO 2026", title: "La ciudad que aprendió a mirar hacia arriba", category: "Historia" },
-  { number: "Nº 215", date: "27 AGO 2026", title: "Las canciones que cambiaron una generación", category: "Cultura sonora" },
-];
+import { resolveTheme, themeStyle } from "../lib/magazine-theme";
 
 const benefits = [
   ["01", "La edición completa", "Historias cuidadas, personajes esenciales y contexto para comprender por qué importa."],
@@ -20,7 +14,12 @@ const benefits = [
 function Arrow({ down = false }: { down?: boolean }) { return <span aria-hidden="true">{down ? "↓" : "↗"}</span>; }
 function Prism() { return <span className="prism" aria-hidden="true"><span className="prism-beam" /></span>; }
 
-export default function Home({ latestEdition }: { latestEdition?: Magazine }) {
+export default function Home({ latestEdition, recentEditions = [] }: { latestEdition?: Magazine; recentEditions?: Magazine[] }) {
+  const featureTheme = resolveTheme(latestEdition?.theme);
+  const featurePath = latestEdition ? `/revista/${latestEdition.date}` : "/revista";
+  const featureIntro = latestEdition?.chapters.find(page => page.intro)?.intro || latestEdition?.subtitle;
+  const words = latestEdition?.chapters.map(page => [page.title, page.intro, ...(page.paragraphs || [])].filter(Boolean).join(" ")).join(" ").split(/\s+/).length || 0;
+  const readingMinutes = Math.max(2, Math.ceil(words / 180));
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [joined, setJoined] = useState(false);
@@ -36,10 +35,10 @@ export default function Home({ latestEdition }: { latestEdition?: Magazine }) {
         <button className="menu-button" type="button" onClick={() => setMenuOpen((value) => !value)} aria-label="Abrir menú" aria-expanded={menuOpen}><span /><span /></button>
       </header>
 
-      <section className="hero">
+      <section className="hero home-current-edition" style={themeStyle(featureTheme)}>
         <div className="hero-noise" />
-        <div className="hero-copy"><div className="edition-label"><span>30 DE AGOSTO DE 1973</span></div><h1>El día en que<br />The Doors anunció<br /><em>su disolución.</em></h1><p className="hero-intro">Tras la muerte de Jim Morrison, los miembros sobrevivientes de The Doors intentaron continuar como trío y publicaron dos nuevos álbumes. Sin embargo, la esencia del grupo ya no era la misma. El 30 de agosto de 1973 se anunció oficialmente su disolución.</p><div className="hero-actions-row"><a className="button button-red" href="/ediciones/the-doors-disolucion-1973">Leer el artículo completo <Arrow /></a><a className="discover-link" href="#ediciones">Descubrir la revista <Arrow down /></a></div><div className="hero-meta"><span><b>8 min</b> lectura principal</span><span><b>4</b> historias nuevas</span><span><b>1</b> edición para guardar</span></div></div>
-        <div className="cover-stage"><div className="cover-shadow" /><article className="typographic-cover" aria-label="Composición editorial The Doors — 1973"><small>HISTORIA DE LA MÚSICA</small><span>THE</span><strong>DOORS</strong><i></i><b>1973</b><p>EL DÍA EN QUE<br />SE CERRÓ UNA ERA</p></article><div className="cover-note"><span>ARTÍCULO PRINCIPAL</span><strong>The Doors</strong><small>El final de una banda que cambió el rostro del rock.</small></div></div>
+        <div className="hero-copy"><div className="edition-label"><span>ÚLTIMA EDICIÓN PUBLICADA</span>{latestEdition && <time dateTime={latestEdition.date}>{latestEdition.dateLabel}</time>}</div><h1>{latestEdition ? <>{latestEdition.title}<em>{latestEdition.subtitle}</em></> : <>Una pausa para<br /><em>lo importante.</em></>}</h1><p className="hero-intro">{featureIntro || "Hechos y personajes importantes. Música que conecta. Palabras que inspiran."}</p>{latestEdition?.anniversary && <p className="home-feature-anniversary">{latestEdition.anniversary}</p>}<div className="hero-actions-row"><a className="button button-red" href={featurePath}>Hojear la edición completa <Arrow /></a><a className="discover-link" href="#ediciones">Otras ediciones <Arrow down /></a></div>{latestEdition && <div className="hero-meta"><span><b>{readingMinutes} min</b> para una buena historia</span><span><b>{latestEdition.chapters.length}</b> páginas para descubrir</span><span><b>1</b> canción para llevar contigo</span></div>}</div>
+        {latestEdition && <div className="cover-stage home-feature-visual"><a href={featurePath} aria-label={`Leer la edición de ${latestEdition.title}`}><img className={latestEdition.coverCutout ? "home-feature-cutout" : "home-feature-photo"} src={latestEdition.coverCutout || latestEdition.photograph || latestEdition.image} alt={latestEdition.title} width="600" height="750" fetchPriority="high" /></a><div className="cover-note"><span>{latestEdition.category}</span><strong>{latestEdition.title}</strong><small>{latestEdition.dateLabel}</small></div></div>}
         <div className="hero-rail"><span>HECHOS</span><i /><span>PERSONAJES</span><i /><span>MÚSICA</span><i /><span>IDEAS</span></div>
       </section>
 
@@ -53,7 +52,7 @@ export default function Home({ latestEdition }: { latestEdition?: Magazine }) {
 
       <section className="editions" id="ediciones">
         <div className="editions-head"><div><div className="section-index light">02 <span /> EL ARCHIVO</div><h2>Ediciones para<br /><em>volver a ellas.</em></h2></div><p>Nuevas historias, todos los días.<br />Una colección que crece contigo.</p></div>
-        <div className="edition-grid">{editions.map((edition, index) => { const slugs = ["the-doors-disolucion-1973", "ingrid-bergman-una-vida-fuera-del-guion", "la-ciudad-que-aprendio-a-mirar-hacia-arriba", "las-canciones-que-cambiaron-una-generacion"]; return <article className={`edition-card ${edition.featured ? "featured" : ""}`} key={edition.number}><div className={`edition-art art-${index}`} aria-hidden="true"><span>{index === 0 ? "The Doors — 1973" : edition.category.split(" ")[0]}</span><i /></div><div className="edition-info"><div><span>{edition.number}</span><span>{edition.date}</span></div><small>{edition.category}</small><h3>{edition.title}</h3><a href={`/ediciones/${slugs[index]}`}>Abrir edición <Arrow /></a></div></article>; })}</div>
+        <div className="edition-grid home-edition-grid">{recentEditions.slice(0, 4).map((edition, index) => <article className={`edition-card ${index === 0 ? "featured" : ""}`} key={edition.date}><a className="home-edition-art" href={`/revista/${edition.date}`} aria-label={`Leer ${edition.title}`}><img src={edition.coverCutout || edition.photograph || edition.image} className={edition.coverCutout ? "is-cutout" : ""} alt={edition.title} loading="lazy" /></a><div className="edition-info"><div><span>{index === 0 ? "ÚLTIMA EDICIÓN" : "EL ARCHIVO"}</span><time dateTime={edition.date}>{edition.dateLabel}</time></div><small>{edition.category}</small><h3>{edition.title}</h3><a href={`/revista/${edition.date}`}>Hojear la edición <Arrow /></a></div></article>)}</div>
       </section>
 
       <section className="membership" id="membresia">

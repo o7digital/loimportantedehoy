@@ -1,9 +1,9 @@
 ---
 import EditorialExperience from "../components/EditorialExperience";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { getEditions } from "../lib/directus";
+import { getEdition, getEditions } from "../lib/directus";
 export const prerender = false;
-const [latestEdition] = await getEditions().catch(() => []);
+const [latestEdition, recentEditions] = await Promise.all([getEdition().catch(() => undefined), getEditions().catch(() => [])]);
 Astro.response.headers.set("Cache-Control", "public, max-age=0, s-maxage=30, stale-while-revalidate=60");
 ---
-<BaseLayout><EditorialExperience latestEdition={latestEdition} client:load /></BaseLayout>
+<BaseLayout title={latestEdition ? `${latestEdition.title} · La última edición | Lo importante de hoy` : undefined} description={latestEdition?.subtitle} image={latestEdition?.image} themeColor={latestEdition?.theme?.color_fondo}><EditorialExperience latestEdition={latestEdition} recentEditions={recentEditions} client:load /></BaseLayout>
