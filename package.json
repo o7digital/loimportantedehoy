@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "test": "node --env-file-if-exists=.env --test tests/theme.test.mjs tests/cms.test.mjs tests/studio.test.mjs tests/editor.test.mjs tests/editor-cms.test.mjs",
-    "test:reader": "node tests/reader.mjs"
+    "test:reader": "node tests/reader.mjs",
+    "test:page-turn": "node tests/page-turn.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",

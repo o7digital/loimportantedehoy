@@ -2,11 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import type { Magazine, MagazineChapter } from "../data/magazines";
 import "../styles/magazine.css";
 import { resolveTheme, themeStyle } from "../lib/magazine-theme";
+import { usePageTurn } from "../lib/use-page-turn";
 
 const number = (value: number) => String(value).padStart(2, "0");
 const path = (edition: Magazine) => `/revista/${edition.date}`;
 function Arrow({ back = false }: { back?: boolean }) {
   return <svg viewBox="0 0 32 24" fill="none" aria-hidden="true"><path d={back ? "M29 12H3m9-9-9 9 9 9" : "M3 12h26m-9-9 9 9-9 9"} stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+function SwipeGesture() {
+  return <svg className="journal-swipe-icon" viewBox="0 0 42 24" fill="none" aria-hidden="true"><path d="M8 7h25M13 3 8 7l5 4m15-8 5 4-5 4M20 20v-7a2 2 0 0 1 4 0v3l2-1 5 2v4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 function Photograph({ edition, chapter, cover = false }: { edition: Magazine; chapter?: MagazineChapter; cover?: boolean }) {
   const cutout = cover && edition.coverCutout;
@@ -47,6 +51,8 @@ export default function MagazineReader({ edition, editions, syncUrl = true, init
   const tabs = useRef<HTMLElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const active = useRef(0);
+  const pageWidth = useRef(0);
+  usePageTurn(track, edition.chapters.length);
   const nextEdition = editions.length > 1 ? editions[(editions.findIndex(item => item.date === edition.date) + 1) % editions.length] : undefined;
   const weekday = new Intl.DateTimeFormat("es-MX", { weekday: "long", timeZone: "UTC" }).format(new Date(`${edition.date}T12:00:00Z`));
   function goTo(index: number, smooth = true) {
@@ -59,9 +65,9 @@ export default function MagazineReader({ edition, editions, syncUrl = true, init
     const container = track.current;
     if (!container) return;
     const fromHash = () => { const index = Math.max(0, edition.chapters.findIndex(chapter => initialChapter ? chapter.id === initialChapter : `#${chapter.id}` === location.hash)); active.current = index; goTo(index, false); setCurrent(index); };
+    pageWidth.current = container.clientWidth;
     fromHash(); setReady(true); if (syncUrl) window.addEventListener("hashchange", fromHash);
-    let width = container.clientWidth;
-    const observer = new ResizeObserver(() => { if (width !== container.clientWidth) { width = container.clientWidth; goTo(active.current, false); } });
+    const observer = new ResizeObserver(() => { if (pageWidth.current !== container.clientWidth) { pageWidth.current = container.clientWidth; goTo(active.current, false); } });
     observer.observe(container);
     return () => { observer.disconnect(); window.removeEventListener("hashchange", fromHash); };
   }, [edition.date, syncUrl, initialChapter]);
@@ -84,8 +90,16 @@ export default function MagazineReader({ edition, editions, syncUrl = true, init
     <header className="journal-masthead"><div className="journal-masthead-brand"><a className="journal-wordmark" href="/revista">Lo importante <em>de hoy</em></a><p className="journal-client-tagline">Hechos y personajes importantes · Música que conecta · Palabras que inspiran</p></div><div className="journal-client-mark" aria-label="Una revista de JerryMC"><span className="prism" aria-hidden="true"><span className="prism-beam" /></span><span>JerryMC</span></div></header>
     <div className="journal-date-line"><span><span className="journal-today-dot" />{weekday.charAt(0).toUpperCase() + weekday.slice(1)}, <time dateTime={edition.date}>{edition.dateLabel}</time></span><span className="journal-date-caption">UNA HISTORIA. UNA CANCIÓN. UNA PAUSA.</span><button type="button" onClick={() => setSheet("index")} aria-haspopup="dialog"><span aria-hidden="true">☰</span> En esta edición</button></div>
     <nav className="journal-tabs" aria-label="Secciones de la revista" ref={tabs}>{edition.chapters.map((chapter, index) => <a key={chapter.id} href={`#${chapter.id}`} aria-current={index === current ? "step" : undefined} onClick={event => { event.preventDefault(); goTo(index); }}><span>{number(index)}</span>{chapter.label}</a>)}</nav>
-    <div className="journal-track" ref={track} tabIndex={0} aria-label="Páginas de la revista. Desliza o usa las flechas para pasar de página." onScroll={() => { const container = track.current; if (container) { const index = Math.max(0, Math.min(edition.chapters.length - 1, Math.round(container.scrollLeft / container.clientWidth))); active.current = index; setCurrent(index); } }}>{edition.chapters.map((chapter, index) => <article id={chapter.id} key={chapter.id} className={`journal-page${chapter.quote && (!chapter.layout || chapter.layout === "quote") ? " journal-page-dark" : ""}`} data-current={current === index} aria-label={`${index + 1} de ${edition.chapters.length}: ${chapter.label}`} aria-hidden={ready && current !== index ? true : undefined} inert={ready && current !== index ? true : undefined}><EditionPage chapter={chapter} edition={edition} index={index} nextEdition={nextEdition} /></article>)}</div>
-    <footer className="journal-controls"><button type="button" aria-label="Página anterior" disabled={current === 0} onClick={() => goTo(current - 1)}><Arrow back /><span>Anterior</span></button><div className="journal-folio"><span>{edition.chapters[current].label}</span><strong>{number(current + 1)} <i>/</i> {number(edition.chapters.length)}</strong><div className="journal-progress-dots" aria-hidden="true">{edition.chapters.map((chapter, index) => <span key={chapter.id} data-current={index === current} />)}</div></div><button type="button" aria-label="Página siguiente" disabled={current === edition.chapters.length - 1} onClick={() => goTo(current + 1)}><span>{current === 0 ? "Comenzar lectura" : "Siguiente página"}</span><Arrow /></button></footer>
+    <div className="journal-book" style={{ "--journal-page-count": edition.chapters.length } as React.CSSProperties}>
+      <div className="journal-track" ref={track} tabIndex={0} aria-label="Páginas de la revista. Desliza a la izquierda para avanzar y a la derecha para volver." onScroll={() => { const container = track.current; if (container && container.clientWidth === pageWidth.current) { const index = Math.max(0, Math.min(edition.chapters.length - 1, Math.round(container.scrollLeft / container.clientWidth))); active.current = index; setCurrent(index); } }}>
+        <div className="journal-leaves">
+          {edition.chapters.map((chapter, index) => <article id={chapter.id} key={chapter.id} className={`journal-page${chapter.quote && (!chapter.layout || chapter.layout === "quote") ? " journal-page-dark" : ""}`} style={{ "--journal-page-index": index } as React.CSSProperties} data-current={current === index} aria-label={`${index + 1} de ${edition.chapters.length}: ${chapter.label}`} aria-hidden={ready && current !== index ? true : undefined} inert={ready && current !== index ? true : undefined}><EditionPage chapter={chapter} edition={edition} index={index} nextEdition={nextEdition} /></article>)}
+          {edition.chapters.map((chapter, index) => <span className="journal-snap-stop" key={`snap-${chapter.id}`} aria-hidden="true" style={{ left: `${index * 100 / edition.chapters.length}%`, width: `${100 / edition.chapters.length}%` }} />)}
+        </div>
+      </div>
+      {current < edition.chapters.length - 1 && <button className="journal-turn-corner" type="button" aria-label="Doblar la esquina para pasar de página" onClick={() => goTo(current + 1)}><span /></button>}
+    </div>
+    <footer className="journal-controls"><button type="button" aria-label="Página anterior" disabled={current === 0} onClick={() => goTo(current - 1)}><Arrow back /><span className="journal-control-label">Anterior</span></button><div className="journal-folio"><span>{edition.chapters[current].label}</span><strong>{number(current + 1)} <i>/</i> {number(edition.chapters.length)}</strong><div className="journal-progress-dots" aria-hidden="true">{edition.chapters.map((chapter, index) => <span key={chapter.id} data-current={index === current} />)}</div><small className="journal-swipe-hint"><SwipeGesture />{current === edition.chapters.length - 1 ? "Desliza a la derecha para volver" : "Desliza para pasar de página"}</small></div><button type="button" aria-label="Página siguiente" disabled={current === edition.chapters.length - 1} onClick={() => goTo(current + 1)}><span className="journal-control-label">{current === 0 ? "Comenzar lectura" : "Siguiente página"}</span><Arrow /></button></footer>
     <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">Página {current + 1} de {edition.chapters.length}: {edition.chapters[current].label}</div>
     <dialog className="journal-dialog" ref={dialog} aria-labelledby="journal-dialog-title" onClose={() => setSheet(null)} onClick={event => { if (event.target === event.currentTarget) setSheet(null); }}><div className="journal-dialog-inner"><button className="journal-dialog-close" type="button" aria-label="Cerrar" onClick={() => setSheet(null)}>×</button><p className="journal-eyebrow">LO IMPORTANTE DE HOY</p><h2 id="journal-dialog-title">{sheet === "editions" ? <>Cada día,<br /><em>una nueva mirada.</em></> : <>En esta<br /><em>edición.</em></>}</h2>{sheet === "editions" ? <div className="journal-edition-list">{editions.map(item => <a href={path(item)} key={item.date} aria-current={item.date === edition.date ? "page" : undefined}><img src={item.photograph || item.image} alt="" width="100" height="100" loading="lazy" /><div><time dateTime={item.date}>{item.dateLabel}</time><h3>{item.title}</h3><p>{item.subtitle}</p></div><span aria-hidden="true">↗</span></a>)}</div> : <nav className="journal-toc" aria-label="Índice de la revista">{edition.chapters.map((chapter, index) => <a key={chapter.id} href={`#${chapter.id}`} aria-current={index === current ? "step" : undefined} onClick={event => { event.preventDefault(); goTo(index); setSheet(null); }}><span>{number(index + 1)}</span><div>{chapter.label}<small>{chapter.kicker}</small></div><span aria-hidden="true">↗</span></a>)}</nav>}</div></dialog>
   </main>;
